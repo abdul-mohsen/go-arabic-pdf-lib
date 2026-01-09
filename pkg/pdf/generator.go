@@ -189,8 +189,6 @@ func (g *Generator) drawProductsTable() {
 }
 
 func (g *Generator) drawTableHeader(tableX float64, colWidths []float64, isRTL bool) {
-	inv := g.invoice
-
 	g.pdf.SetStrokeColor(0, 0, 0)
 	g.pdf.SetLineWidth(0.5)
 
