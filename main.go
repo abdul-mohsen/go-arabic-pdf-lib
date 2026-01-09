@@ -87,9 +87,9 @@ func main() {
 // generateSampleInvoice creates a sample invoice matching the Arabic template
 func generateSampleInvoice() Invoice {
 	products := []Product{
-		{Name: "منتج 1", Quantity: 1.0, UnitPrice: 50.00, TaxableAmt: 50.00, VATAmount: 7.5, TotalWithVAT: 57.5},
-		{Name: "منتج 2", Quantity: 1.0, UnitPrice: 70.00, TaxableAmt: 70.00, VATAmount: 10.5, TotalWithVAT: 80.5},
-		{Name: "منتج 3", Quantity: 1.0, UnitPrice: 100.00, TaxableAmt: 100.00, VATAmount: 15, TotalWithVAT: 115},
+		{Name: "منتج منتج منتج منتج منتج منتجمنتجمنتجمنتجمنتجمنتج 1", Quantity: 1.0, UnitPrice: 50.00, TaxableAmt: 50.00, VATAmount: 7.5, TotalWithVAT: 57.5},
+		{Name: "منتج (the world is big an need a lot of help please) 2", Quantity: 1.0, UnitPrice: 70.00, TaxableAmt: 70.00, VATAmount: 10.5, TotalWithVAT: 80.5},
+		{Name: "منتج  fasdf 23R@#$@# @#$ @#$@ 3", Quantity: 1.0, UnitPrice: 100.00, TaxableAmt: 100.00, VATAmount: 15, TotalWithVAT: 115},
 	}
 
 	return Invoice{
