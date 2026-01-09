@@ -1,0 +1,18 @@
+# Dockerfile for running Python PDF tests
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install Python dependencies
+COPY tests/requirements.txt /app/tests/
+RUN pip install --no-cache-dir -r /app/tests/requirements.txt
+
+# Copy test files
+COPY tests/ /app/tests/
+
+# Set environment
+ENV PYTHONPATH=/app
+ENV PDF_PATH=/app/output/invoice_output.pdf
+
+# Run tests
+CMD ["pytest", "/app/tests/test_pdf_output.py", "-v", "--tb=short"]
