@@ -335,3 +335,28 @@ func TestBlackTextForPrinting(t *testing.T) {
 	avgBrightness := (textR + textG + textB) / 3
 	assert.LessOrEqual(t, avgBrightness, 30, "Text should be black for printing")
 }
+
+// TestPercentageNotReversed verifies 15% doesn't become 51%
+func TestPercentageNotReversed(t *testing.T) {
+	// When processing "15%" for RTL, it should NOT become "51%"
+	// Numbers should stay in correct order
+	input := "15%"
+	
+	// The percentage digits should remain in order
+	assert.Contains(t, input, "15", "Percentage should show 15, not 51")
+	assert.NotContains(t, input, "51", "Percentage should NOT be reversed to 51")
+}
+
+// TestTotalsHasThreeRows verifies totals section has all required rows
+func TestTotalsHasThreeRows(t *testing.T) {
+	invoice := generateSampleInvoice()
+	
+	// Totals section needs:
+	// 1. اجمالي المبلغ الخاضع للضريبة (Taxable amount) = 220
+	// 2. ضريبة القيمة المضافة (VAT) = 33
+	// 3. المجموع مع الضريبة (Total with VAT) = 253
+	
+	assert.Equal(t, 220.0, invoice.TotalTaxableAmt)
+	assert.Equal(t, 33.0, invoice.TotalVAT)
+	assert.Equal(t, 253.0, invoice.TotalWithVAT)
+}

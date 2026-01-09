@@ -163,7 +163,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	contentWidth := pageWidth - (2 * margin)
 	currentY := 10.0
 
-	// ===== HEADER - Arabic Title (black border only) =====
+	// ===== HEADER - Arabic Title (with border) =====
 	pdf.SetStrokeColor(0, 0, 0)
 	pdf.SetLineWidth(1.0)
 	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 22, "D")
@@ -175,7 +175,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	drawText(&pdf, invoice.Title, margin, currentY+4, contentWidth)
 	currentY += 24
 
-	// ===== INVOICE NUMBER =====
+	// ===== INVOICE NUMBER (with border) =====
 	pdf.SetLineWidth(0.5)
 	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
 
@@ -187,43 +187,41 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	pdf.Cell(nil, labelText)
 	pdf.SetXY(margin+3, currentY+3)
 	pdf.Cell(nil, invoice.InvoiceNumber)
-	currentY += 15
+	currentY += 16
 
-	// ===== STORE NAME =====
-	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
-	if err := pdf.SetFont("AmiriBold", "", 10); err != nil {
-		pdf.SetFont("Amiri", "", 10)
+	// ===== STORE NAME (no border, just text) =====
+	if err := pdf.SetFont("AmiriBold", "", 11); err != nil {
+		pdf.SetFont("Amiri", "", 11)
 	}
 	pdf.SetTextColor(0, 0, 0)
-	drawText(&pdf, invoice.StoreName, margin, currentY+2, contentWidth)
-	currentY += 15
+	drawText(&pdf, invoice.StoreName, margin, currentY, contentWidth)
+	currentY += 14
 
-	// ===== STORE ADDRESS =====
-	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
+	// ===== STORE ADDRESS (no border, just text) =====
 	pdf.SetFont("Amiri", "", 9)
-	drawText(&pdf, invoice.StoreAddress, margin, currentY+2, contentWidth)
-	currentY += 15
+	drawText(&pdf, invoice.StoreAddress, margin, currentY, contentWidth)
+	currentY += 14
 
-	// ===== DATE =====
-	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
+	// ===== DATE (with border) =====
+	pdf.RectFromUpperLeftWithStyle(margin+30, currentY, contentWidth-60, 14, "D")
 	dateLabelText := arabictext.Process("تاريخ:")
 	dateLabelW, _ := pdf.MeasureTextWidth(dateLabelText)
-	pdf.SetXY(margin+contentWidth-dateLabelW-3, currentY+3)
+	pdf.SetXY(margin+contentWidth-30-dateLabelW-3, currentY+3)
 	pdf.Cell(nil, dateLabelText)
-	pdf.SetXY(margin+3, currentY+3)
+	pdf.SetXY(margin+33, currentY+3)
 	pdf.Cell(nil, invoice.Date)
-	currentY += 15
+	currentY += 16
 
-	// ===== VAT REGISTRATION =====
-	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
-	pdf.SetFont("Amiri", "", 7)
+	// ===== VAT REGISTRATION (no border, just text) =====
+	pdf.SetFont("Amiri", "", 8)
+	// Draw as single line: number on left, label on right
 	vatLabelText := arabictext.Process("رقم تسجيل ضريبة القيمة المضافة:")
 	vatLabelW, _ := pdf.MeasureTextWidth(vatLabelText)
-	pdf.SetXY(margin+contentWidth-vatLabelW-3, currentY+3)
+	pdf.SetXY(margin+contentWidth-vatLabelW, currentY)
 	pdf.Cell(nil, vatLabelText)
-	pdf.SetXY(margin+3, currentY+3)
+	pdf.SetXY(margin, currentY)
 	pdf.Cell(nil, invoice.VATRegistrationNo)
-	currentY += 18
+	currentY += 14
 
 	// ===== PRODUCTS TABLE =====
 	// Column widths - use full page width
@@ -350,8 +348,9 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	valueWidth := 40.0
 	labelWidth := totalsWidth - valueWidth
 
-	// Taxable Amount Row
+	// Row 1: Taxable Amount
 	pdf.SetStrokeColor(0, 0, 0)
+	pdf.SetLineWidth(0.5)
 	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 16, "D")
 	pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, currentY, labelWidth, 16, "D")
 	
@@ -368,7 +367,29 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	pdf.Cell(nil, taxableLbl)
 	currentY += 16
 
-	// Total with VAT Row (bold, with border)
+	// Row 2: VAT Amount (15%)
+	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 16, "D")
+	pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, currentY, labelWidth, 16, "D")
+	
+	vatTotalStr := fmt.Sprintf("%.0f", invoice.TotalVAT)
+	vatTotalW, _ := pdf.MeasureTextWidth(vatTotalStr)
+	pdf.SetXY(totalsX+(valueWidth-vatTotalW)/2, currentY+4)
+	pdf.Cell(nil, vatTotalStr)
+	
+	// Fix: Don't reverse the percentage - write it separately
+	vatLbl := arabictext.Process("ضريبة القيمة المضافة")
+	vatPct := "(15%)" // Keep percentage as-is, don't process with Arabic
+	vatLblW, _ := pdf.MeasureTextWidth(vatLbl)
+	pctW, _ := pdf.MeasureTextWidth(vatPct)
+	totalLblWidth := vatLblW + pctW + 3
+	startX := totalsX + valueWidth + (labelWidth-totalLblWidth)/2
+	pdf.SetXY(startX, currentY+4)
+	pdf.Cell(nil, vatPct)
+	pdf.SetXY(startX+pctW+3, currentY+4)
+	pdf.Cell(nil, vatLbl)
+	currentY += 16
+
+	// Row 3: Total with VAT (bold border)
 	pdf.SetLineWidth(1.0)
 	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 18, "D")
 	pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, currentY, labelWidth, 18, "D")
@@ -383,9 +404,16 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	pdf.SetXY(totalsX+(valueWidth-totalStrW)/2, currentY+5)
 	pdf.Cell(nil, totalStr)
 	
-	totalLbl := arabictext.Process("المجموع مع الضريبة (15%)")
+	// Fix: Don't reverse the percentage
+	totalLbl := arabictext.Process("المجموع مع الضريبة")
+	totalPct := "(15%)"
 	totalLblW, _ := pdf.MeasureTextWidth(totalLbl)
-	pdf.SetXY(totalsX+valueWidth+(labelWidth-totalLblW)/2, currentY+5)
+	totalPctW, _ := pdf.MeasureTextWidth(totalPct)
+	totalFullWidth := totalLblW + totalPctW + 3
+	totalStartX := totalsX + valueWidth + (labelWidth-totalFullWidth)/2
+	pdf.SetXY(totalStartX, currentY+5)
+	pdf.Cell(nil, totalPct)
+	pdf.SetXY(totalStartX+totalPctW+3, currentY+5)
 	pdf.Cell(nil, totalLbl)
 	currentY += 22
 
