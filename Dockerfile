@@ -2,15 +2,17 @@ FROM golang:1.21-alpine AS builder
 
 WORKDIR /app
 
-# Copy source files
+# Copy module files first for better caching
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY *.go ./
+# Copy source files
+COPY cmd/ ./cmd/
+COPY pkg/ ./pkg/
 COPY arabictext/ ./arabictext/
 
-# Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o bill-generator .
+# Build from cmd/generator
+RUN CGO_ENABLED=0 GOOS=linux go build -o bill-generator ./cmd/generator
 
 # Final stage
 FROM alpine:3.19
@@ -33,8 +35,9 @@ RUN curl -L -o /tmp/amiri.zip https://github.com/aliftype/amiri/releases/downloa
 # Copy binary
 COPY --from=builder /app/bill-generator .
 
-# Copy invoice data JSON
+# Copy invoice data JSON files (Arabic and English)
 COPY invoice_data.json .
+COPY invoice_data_en.json .
 
 # Set environment
 ENV OUTPUT_DIR=/app/output
