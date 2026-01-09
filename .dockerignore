@@ -1,0 +1,6 @@
+*.pdf
+output/
+.git
+.gitignore
+README.md
+test_*.pdf
