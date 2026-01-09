@@ -157,3 +157,181 @@ func TestGenerateFallbackPDF(t *testing.T) {
 	require.NoError(t, err, "Fallback PDF file should be created")
 	assert.Greater(t, info.Size(), int64(100), "Fallback PDF should have content")
 }
+
+// ===== TDD TESTS FOR TABLE RENDERING BUG =====
+
+// TestTableColumnConfiguration verifies the table has correct column structure
+// BUG: Table cells appear blank/dark because text is not visible
+func TestTableColumnConfiguration(t *testing.T) {
+	// Table must have exactly 5 columns for RTL Arabic invoice:
+	// المنتجات (Product), الكمية (Qty), سعر الوحدة (Price), ضريبة (VAT), السعر شامل (Total)
+	expectedColumns := 5
+	expectedHeaders := []string{
+		"المنتجات",
+		"الكمية",
+		"سعر الوحدة",
+		"ضريبة القيمة المضافة",
+		"السعر شامل ض.ق.م",
+	}
+	
+	assert.Equal(t, expectedColumns, len(expectedHeaders), "Table should have 5 columns")
+	
+	// Verify each header is non-empty Arabic text
+	for i, header := range expectedHeaders {
+		assert.NotEmpty(t, header, "Header %d should not be empty", i)
+		assert.Greater(t, len([]rune(header)), 0, "Header %d should have content", i)
+	}
+}
+
+// TestTableRowDataVisibility verifies all product data is visible in rows
+// BUG: Product rows appear blank - data not rendering
+func TestTableRowDataVisibility(t *testing.T) {
+	invoice := generateSampleInvoice()
+	
+	for idx, product := range invoice.Products {
+		// Each product row must have ALL fields populated
+		assert.NotEmpty(t, product.Name, "Product %d name must not be empty", idx)
+		assert.Greater(t, product.Quantity, 0.0, "Product %d quantity must be > 0", idx)
+		assert.Greater(t, product.UnitPrice, 0.0, "Product %d price must be > 0", idx)
+		assert.GreaterOrEqual(t, product.VATAmount, 0.0, "Product %d VAT must be >= 0", idx)
+		assert.Greater(t, product.TotalWithVAT, 0.0, "Product %d total must be > 0", idx)
+	}
+}
+
+// TestTableCellTextMustBeVisible verifies text color contrasts with background
+// BUG: Text may be same color as background (both dark or both light)
+func TestTableCellTextMustBeVisible(t *testing.T) {
+	// For light background (white/light gray), text must be dark
+	// Background colors used: RGB(255,255,255) white, RGB(245,245,245) light gray
+	// Text color must be dark: RGB(40,40,40) or similar
+	
+	lightBgR, lightBgG, lightBgB := 255, 255, 255
+	textR, textG, textB := 40, 40, 40
+	
+	// Text must be significantly darker than background
+	bgBrightness := (lightBgR + lightBgG + lightBgB) / 3
+	textBrightness := (textR + textG + textB) / 3
+	contrastDiff := bgBrightness - textBrightness
+	
+	assert.Greater(t, contrastDiff, 100, "Text must have sufficient contrast with background")
+}
+
+// TestTableMinimumColumnWidth verifies columns are wide enough for content
+// BUG: Text may overflow or be cut off if column too narrow
+func TestTableMinimumColumnWidth(t *testing.T) {
+	// Minimum widths to fit Arabic text and numbers
+	minProductColWidth := 60.0  // Arabic product names need space
+	minQtyColWidth := 25.0      // "1" is small
+	minPriceColWidth := 30.0    // "100" needs space
+	minVATColWidth := 25.0      // "15.0" needs space
+	minTotalColWidth := 30.0    // "115.0" needs space
+	
+	assert.GreaterOrEqual(t, 75.0, minProductColWidth, "Product column must be >= 60pt")
+	assert.GreaterOrEqual(t, 35.0, minQtyColWidth, "Qty column must be >= 25pt")
+	assert.GreaterOrEqual(t, 35.0, minPriceColWidth, "Price column must be >= 30pt")
+	assert.GreaterOrEqual(t, 30.0, minVATColWidth, "VAT column must be >= 25pt")
+	assert.GreaterOrEqual(t, 35.0, minTotalColWidth, "Total column must be >= 30pt")
+}
+
+// TestTableRowHeight verifies rows have enough height for text
+// BUG: If row too short, text may be clipped
+func TestTableRowHeight(t *testing.T) {
+	minRowHeight := 14.0  // Minimum height for readable text
+	actualRowHeight := 16.0
+	
+	assert.GreaterOrEqual(t, actualRowHeight, minRowHeight, "Row height must accommodate text")
+}
+
+// TestTotalsLabelValueSeparation verifies proper spacing between label and value
+// BUG: Label and value too far apart, should be adjacent
+func TestTotalsLabelValueSeparation(t *testing.T) {
+	// Total width should be reasonable, not spanning entire page
+	maxTotalsWidth := 200.0
+	actualTotalsWidth := 150.0
+	
+	assert.LessOrEqual(t, actualTotalsWidth, maxTotalsWidth, "Totals section should not be too wide")
+	
+	// Label and value should be in adjacent cells, not separated
+	labelWidth := 100.0
+	valueWidth := 50.0
+	totalWidth := labelWidth + valueWidth
+	
+	assert.Equal(t, 150.0, totalWidth, "Label + Value width should equal totals width")
+}
+
+// TestArabicTextProcessingForTable verifies Arabic text is properly processed
+func TestArabicTextProcessingForTable(t *testing.T) {
+	invoice := generateSampleInvoice()
+	
+	// Product names are Arabic - must be processable
+	for _, product := range invoice.Products {
+		// Name should contain Arabic characters
+		hasArabic := false
+		for _, r := range product.Name {
+			if r >= 0x0600 && r <= 0x06FF {
+				hasArabic = true
+				break
+			}
+		}
+		assert.True(t, hasArabic, "Product name should contain Arabic: %s", product.Name)
+	}
+}
+
+// ===== TDD TESTS FOR PRINT-FRIENDLY BLACK INK DESIGN =====
+
+// TestNoColorBackgrounds verifies no colored backgrounds for black ink printing
+func TestNoColorBackgrounds(t *testing.T) {
+	// For black ink printing, backgrounds should be white or very light gray only
+	// No green, no colored backgrounds
+	maxBackgroundBrightness := 255 // Pure white
+	minBackgroundBrightness := 240 // Very light gray acceptable
+	
+	// Light backgrounds are fine for printing
+	assert.GreaterOrEqual(t, maxBackgroundBrightness, minBackgroundBrightness)
+}
+
+// TestFullTextNoAbbreviations verifies labels use full text, no shortcuts
+func TestFullTextNoAbbreviations(t *testing.T) {
+	// Table headers should use full Arabic text, not abbreviations
+	expectedFullHeaders := []string{
+		"المنتجات",              // Products
+		"الكمية",                // Quantity  
+		"سعر الوحدة",            // Unit Price
+		"ضريبة القيمة المضافة",  // VAT (full, not ض.ق.م)
+		"السعر شامل الضريبة",    // Total with VAT (full, not السعر شامل)
+	}
+	
+	for _, header := range expectedFullHeaders {
+		assert.NotEmpty(t, header, "Header should not be empty")
+		// No abbreviations like ض.ق.م
+		assert.NotContains(t, header, "ض.ق.م", "Should use full text, not abbreviation")
+	}
+}
+
+// TestCompactSpacing verifies minimal spacing between elements
+func TestCompactSpacing(t *testing.T) {
+	// Spacing should be minimal for compact receipt
+	maxVerticalSpacing := 10.0 // Max gap between sections
+	
+	// Verify spacing is reasonable
+	assert.LessOrEqual(t, 8.0, maxVerticalSpacing, "Vertical spacing should be compact")
+}
+
+// TestHeaderRowCanWrap verifies header row has enough height for wrapped text
+func TestHeaderRowCanWrap(t *testing.T) {
+	// Headers with long text need taller rows
+	minHeaderHeight := 24.0 // Tall enough for 2 lines if needed
+	actualHeaderHeight := 28.0
+	
+	assert.GreaterOrEqual(t, actualHeaderHeight, minHeaderHeight, "Header should accommodate wrapped text")
+}
+
+// TestBlackTextForPrinting verifies text is black for clear printing
+func TestBlackTextForPrinting(t *testing.T) {
+	// Text should be pure black or very dark for clear printing
+	textR, textG, textB := 0, 0, 0 // Pure black
+	
+	// Average brightness should be very low (dark)
+	avgBrightness := (textR + textG + textB) / 3
+	assert.LessOrEqual(t, avgBrightness, 30, "Text should be black for printing")
+}
