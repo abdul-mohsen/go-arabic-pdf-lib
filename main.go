@@ -300,11 +300,11 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 			xPos += colWidths[i]
 		}
 		
-		// Draw text - position text higher in cell to prevent bottom overflow
-		// Using +3 offset from cell top to keep descenders within cell
+		// Draw text - position at baseline +5 from cell top
+		// This ensures text TOP is clearly inside current cell, not previous cell
 		pdf.SetTextColor(0, 0, 0)
 		xPos = tableX
-		textY := currentY + 3
+		textY := currentY + 5
 		
 		// Column 0: Total with VAT
 		totalStr := fmt.Sprintf("%.1f", product.TotalWithVAT)
