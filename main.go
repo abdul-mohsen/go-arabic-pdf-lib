@@ -159,191 +159,242 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	pdf.AddPage()
 
 	pageWidth := 226.77
-	margin := 8.0
+	margin := 10.0
 	contentWidth := pageWidth - (2 * margin)
-	currentY := 12.0
+	currentY := 10.0
 
-	// ===== GREEN HEADER - Arabic Title =====
-	pdf.SetFillColor(76, 175, 80)
-	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 26, "F")
+	// ===== HEADER - Arabic Title (black border only) =====
+	pdf.SetStrokeColor(0, 0, 0)
+	pdf.SetLineWidth(1.0)
+	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 22, "D")
 
-	if err := pdf.SetFont("AmiriBold", "", 13); err != nil {
-		pdf.SetFont("Amiri", "", 13)
+	if err := pdf.SetFont("AmiriBold", "", 14); err != nil {
+		pdf.SetFont("Amiri", "", 14)
 	}
-	pdf.SetTextColor(255, 255, 255)
-	drawText(&pdf, invoice.Title, margin, currentY+6, contentWidth)
-	currentY += 32
+	pdf.SetTextColor(0, 0, 0)
+	drawText(&pdf, invoice.Title, margin, currentY+4, contentWidth)
+	currentY += 24
 
-	// ===== INVOICE NUMBER BOX =====
-	pdf.SetFillColor(250, 250, 250)
-	pdf.SetStrokeColor(200, 200, 200)
+	// ===== INVOICE NUMBER =====
 	pdf.SetLineWidth(0.5)
-	boxWidth := contentWidth - 30
-	boxX := margin + 15
-	pdf.RectFromUpperLeftWithStyle(boxX, currentY, boxWidth, 16, "FD")
+	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
 
 	pdf.SetFont("Amiri", "", 9)
-	pdf.SetTextColor(80, 80, 80)
-	invoiceText := fmt.Sprintf("%s :رقم الفاتورة", invoice.InvoiceNumber)
-	drawText(&pdf, invoiceText, boxX, currentY+3, boxWidth)
-	currentY += 21
+	pdf.SetTextColor(0, 0, 0)
+	labelText := arabictext.Process("رقم الفاتورة:")
+	labelW, _ := pdf.MeasureTextWidth(labelText)
+	pdf.SetXY(margin+contentWidth-labelW-3, currentY+3)
+	pdf.Cell(nil, labelText)
+	pdf.SetXY(margin+3, currentY+3)
+	pdf.Cell(nil, invoice.InvoiceNumber)
+	currentY += 15
 
-	// ===== STORE NAME BOX =====
-	pdf.SetFillColor(76, 175, 80)
-	boxWidth = contentWidth - 24
-	boxX = margin + 12
-	pdf.RectFromUpperLeftWithStyle(boxX, currentY, boxWidth, 18, "F")
-
-	if err := pdf.SetFont("AmiriBold", "", 11); err != nil {
-		pdf.SetFont("Amiri", "", 11)
+	// ===== STORE NAME =====
+	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
+	if err := pdf.SetFont("AmiriBold", "", 10); err != nil {
+		pdf.SetFont("Amiri", "", 10)
 	}
-	pdf.SetTextColor(255, 255, 255)
-	drawText(&pdf, invoice.StoreName, boxX, currentY+3, boxWidth)
-	currentY += 23
+	pdf.SetTextColor(0, 0, 0)
+	drawText(&pdf, invoice.StoreName, margin, currentY+2, contentWidth)
+	currentY += 15
 
-	// ===== STORE ADDRESS BOX =====
-	pdf.SetFillColor(76, 175, 80)
-	pdf.RectFromUpperLeftWithStyle(boxX, currentY, boxWidth, 16, "F")
-
-	pdf.SetFont("Amiri", "", 10)
-	pdf.SetTextColor(255, 255, 255)
-	drawText(&pdf, invoice.StoreAddress, boxX, currentY+2, boxWidth)
-	currentY += 21
-
-	// ===== DATE BOX =====
-	pdf.SetFillColor(250, 250, 250)
-	pdf.SetStrokeColor(200, 200, 200)
-	boxWidth = contentWidth - 50
-	boxX = margin + 25
-	pdf.RectFromUpperLeftWithStyle(boxX, currentY, boxWidth, 14, "FD")
-
+	// ===== STORE ADDRESS =====
+	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
 	pdf.SetFont("Amiri", "", 9)
-	pdf.SetTextColor(80, 80, 80)
-	dateText := fmt.Sprintf("%s :تاريخ", invoice.Date)
-	drawText(&pdf, dateText, boxX, currentY+2, boxWidth)
-	currentY += 19
+	drawText(&pdf, invoice.StoreAddress, margin, currentY+2, contentWidth)
+	currentY += 15
+
+	// ===== DATE =====
+	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
+	dateLabelText := arabictext.Process("تاريخ:")
+	dateLabelW, _ := pdf.MeasureTextWidth(dateLabelText)
+	pdf.SetXY(margin+contentWidth-dateLabelW-3, currentY+3)
+	pdf.Cell(nil, dateLabelText)
+	pdf.SetXY(margin+3, currentY+3)
+	pdf.Cell(nil, invoice.Date)
+	currentY += 15
 
 	// ===== VAT REGISTRATION =====
+	pdf.RectFromUpperLeftWithStyle(margin, currentY, contentWidth, 14, "D")
 	pdf.SetFont("Amiri", "", 7)
-	pdf.SetTextColor(60, 60, 60)
-	vatText := fmt.Sprintf("%s :رقم تسجيل ضريبة القيمة المضافة", invoice.VATRegistrationNo)
-	drawText(&pdf, vatText, margin, currentY, contentWidth)
-	currentY += 14
+	vatLabelText := arabictext.Process("رقم تسجيل ضريبة القيمة المضافة:")
+	vatLabelW, _ := pdf.MeasureTextWidth(vatLabelText)
+	pdf.SetXY(margin+contentWidth-vatLabelW-3, currentY+3)
+	pdf.Cell(nil, vatLabelText)
+	pdf.SetXY(margin+3, currentY+3)
+	pdf.Cell(nil, invoice.VATRegistrationNo)
+	currentY += 18
 
 	// ===== PRODUCTS TABLE =====
-	// Column widths (RTL order: Total, VAT, Price, Qty, Unit, Product)
-	colWidths := []float64{30, 26, 26, 22, 26, 80}
+	// Column widths - use full page width
+	colWidths := []float64{35, 35, 35, 25, 76} // Total, VAT, Price, Qty, Product
 	tableWidth := 0.0
 	for _, w := range colWidths {
 		tableWidth += w
 	}
-	tableX := margin + (contentWidth-tableWidth)/2
+	tableX := margin
 
-	headers := []string{
-		"السعر شامل ض.ق.م",
-		"ضريبة القيمة المضافة",
-		"سعر الوحدة",
+	// Headers with FULL TEXT (no abbreviations) - 2 lines if needed
+	// Order: السعر شامل الضريبة | ضريبة القيمة المضافة | سعر الوحدة | الكمية | المنتجات
+	headersLine1 := []string{
+		"السعر شامل",
+		"ضريبة القيمة",
+		"سعر",
+		"",
+		"",
+	}
+	headersLine2 := []string{
+		"الضريبة",
+		"المضافة",
+		"الوحدة",
 		"الكمية",
-		"سعر الوحدة",
 		"المنتجات",
 	}
 
-	// Table Header
-	if err := pdf.SetFont("AmiriBold", "", 6); err != nil {
-		pdf.SetFont("Amiri", "", 6)
-	}
-	pdf.SetTextColor(60, 60, 60)
-	pdf.SetFillColor(235, 235, 235)
-	pdf.SetStrokeColor(180, 180, 180)
+	// Table Header - black border only
+	pdf.SetStrokeColor(0, 0, 0)
 	pdf.SetLineWidth(0.5)
 
 	xPos := tableX
-	headerHeight := 16.0
-	for i, header := range headers {
-		pdf.RectFromUpperLeftWithStyle(xPos, currentY, colWidths[i], headerHeight, "FD")
-		drawText(&pdf, header, xPos, currentY+4, colWidths[i])
+	headerHeight := 28.0 // Taller for 2 lines
+	
+	// Draw header cells
+	for i := range headersLine1 {
+		pdf.RectFromUpperLeftWithStyle(xPos, currentY, colWidths[i], headerHeight, "D")
+		xPos += colWidths[i]
+	}
+	
+	// Draw header text (2 lines)
+	if err := pdf.SetFont("AmiriBold", "", 7); err != nil {
+		pdf.SetFont("Amiri", "", 7)
+	}
+	pdf.SetTextColor(0, 0, 0)
+	
+	xPos = tableX
+	for i := range headersLine1 {
+		// Line 1
+		if headersLine1[i] != "" {
+			h1Text := arabictext.Process(headersLine1[i])
+			h1w, _ := pdf.MeasureTextWidth(h1Text)
+			pdf.SetXY(xPos+(colWidths[i]-h1w)/2, currentY+4)
+			pdf.Cell(nil, h1Text)
+		}
+		// Line 2
+		h2Text := arabictext.Process(headersLine2[i])
+		h2w, _ := pdf.MeasureTextWidth(h2Text)
+		pdf.SetXY(xPos+(colWidths[i]-h2w)/2, currentY+14)
+		pdf.Cell(nil, h2Text)
 		xPos += colWidths[i]
 	}
 	currentY += headerHeight
 
 	// Table Rows
-	pdf.SetFont("Amiri", "", 8)
-	pdf.SetTextColor(40, 40, 40)
-	rowHeight := 14.0
+	pdf.SetFont("Amiri", "", 10)
+	rowHeight := 16.0
 
-	for idx, product := range invoice.Products {
-		if idx%2 == 0 {
-			pdf.SetFillColor(255, 255, 255)
-		} else {
-			pdf.SetFillColor(245, 245, 245)
-		}
-
+	for _, product := range invoice.Products {
+		pdf.SetStrokeColor(0, 0, 0)
+		
+		// Draw row cells (border only)
 		xPos = tableX
-		rowData := []string{
-			fmt.Sprintf("%.1f", product.TotalWithVAT),
-			fmt.Sprintf("%.1f", product.VATAmount),
-			fmt.Sprintf("%.0f", product.UnitPrice),
-			fmt.Sprintf("%.1f", product.Quantity),
-			fmt.Sprintf("%.0f", product.UnitPrice),
-			product.Name,
-		}
-
-		for i, data := range rowData {
-			pdf.RectFromUpperLeftWithStyle(xPos, currentY, colWidths[i], rowHeight, "FD")
-			drawText(&pdf, data, xPos, currentY+3, colWidths[i])
+		for i := range colWidths {
+			pdf.RectFromUpperLeftWithStyle(xPos, currentY, colWidths[i], rowHeight, "D")
 			xPos += colWidths[i]
 		}
+		
+		// Draw text
+		pdf.SetTextColor(0, 0, 0)
+		xPos = tableX
+		
+		// Column 0: Total with VAT
+		totalStr := fmt.Sprintf("%.1f", product.TotalWithVAT)
+		tw, _ := pdf.MeasureTextWidth(totalStr)
+		pdf.SetXY(xPos+(colWidths[0]-tw)/2, currentY+4)
+		pdf.Cell(nil, totalStr)
+		xPos += colWidths[0]
+		
+		// Column 1: VAT Amount
+		vatStr := fmt.Sprintf("%.1f", product.VATAmount)
+		vw, _ := pdf.MeasureTextWidth(vatStr)
+		pdf.SetXY(xPos+(colWidths[1]-vw)/2, currentY+4)
+		pdf.Cell(nil, vatStr)
+		xPos += colWidths[1]
+		
+		// Column 2: Unit Price
+		priceStr := fmt.Sprintf("%.0f", product.UnitPrice)
+		pw, _ := pdf.MeasureTextWidth(priceStr)
+		pdf.SetXY(xPos+(colWidths[2]-pw)/2, currentY+4)
+		pdf.Cell(nil, priceStr)
+		xPos += colWidths[2]
+		
+		// Column 3: Quantity
+		qtyStr := fmt.Sprintf("%.0f", product.Quantity)
+		qw, _ := pdf.MeasureTextWidth(qtyStr)
+		pdf.SetXY(xPos+(colWidths[3]-qw)/2, currentY+4)
+		pdf.Cell(nil, qtyStr)
+		xPos += colWidths[3]
+		
+		// Column 4: Product Name (Arabic)
+		nameText := arabictext.Process(product.Name)
+		nw, _ := pdf.MeasureTextWidth(nameText)
+		pdf.SetXY(xPos+(colWidths[4]-nw)/2, currentY+4)
+		pdf.Cell(nil, nameText)
+		
 		currentY += rowHeight
 	}
-	currentY += 10
+	currentY += 6
 
 	// ===== TOTALS SECTION =====
-	totalsWidth := 150.0
-	totalsX := margin + (contentWidth-totalsWidth)/2
-	labelWidth := 100.0
-	valueWidth := 50.0
+	totalsWidth := tableWidth
+	totalsX := tableX
+	valueWidth := 40.0
+	labelWidth := totalsWidth - valueWidth
 
-	pdf.SetFillColor(245, 245, 245)
-	pdf.SetStrokeColor(180, 180, 180)
+	// Taxable Amount Row
+	pdf.SetStrokeColor(0, 0, 0)
+	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 16, "D")
+	pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, currentY, labelWidth, 16, "D")
+	
+	pdf.SetFont("Amiri", "", 9)
+	pdf.SetTextColor(0, 0, 0)
+	taxableStr := fmt.Sprintf("%.0f", invoice.TotalTaxableAmt)
+	taxableW, _ := pdf.MeasureTextWidth(taxableStr)
+	pdf.SetXY(totalsX+(valueWidth-taxableW)/2, currentY+4)
+	pdf.Cell(nil, taxableStr)
+	
+	taxableLbl := arabictext.Process("اجمالي المبلغ الخاضع للضريبة")
+	taxableLblW, _ := pdf.MeasureTextWidth(taxableLbl)
+	pdf.SetXY(totalsX+valueWidth+(labelWidth-taxableLblW)/2, currentY+4)
+	pdf.Cell(nil, taxableLbl)
+	currentY += 16
 
-	// Taxable Amount
-	pdf.SetFont("Amiri", "", 8)
-	pdf.SetTextColor(50, 50, 50)
-	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, labelWidth, 14, "FD")
-	pdf.RectFromUpperLeftWithStyle(totalsX+labelWidth, currentY, valueWidth, 14, "FD")
-
-	drawText(&pdf, "اجمالي المبلغ الخاضع للضريبة", totalsX, currentY+2, labelWidth)
-	drawText(&pdf, fmt.Sprintf("%.0f", invoice.TotalTaxableAmt), totalsX+labelWidth, currentY+2, valueWidth)
-	currentY += 14
-
-	// VAT Row
-	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, labelWidth, 14, "FD")
-	pdf.RectFromUpperLeftWithStyle(totalsX+labelWidth, currentY, valueWidth, 14, "FD")
-
-	drawText(&pdf, "ضريبة القيمة المضافة (15%)", totalsX, currentY+2, labelWidth)
-	drawText(&pdf, fmt.Sprintf("%.0f", invoice.TotalVAT), totalsX+labelWidth, currentY+2, valueWidth)
-	currentY += 14
-
-	// Total with VAT (highlighted)
-	pdf.SetFillColor(76, 175, 80)
-	pdf.SetTextColor(255, 255, 255)
-	if err := pdf.SetFont("AmiriBold", "", 9); err != nil {
-		pdf.SetFont("Amiri", "", 9)
+	// Total with VAT Row (bold, with border)
+	pdf.SetLineWidth(1.0)
+	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 18, "D")
+	pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, currentY, labelWidth, 18, "D")
+	
+	if err := pdf.SetFont("AmiriBold", "", 10); err != nil {
+		pdf.SetFont("Amiri", "", 10)
 	}
-
-	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, labelWidth, 18, "F")
-	pdf.RectFromUpperLeftWithStyle(totalsX+labelWidth, currentY, valueWidth, 18, "F")
-
-	drawText(&pdf, "المجموع مع الضريبة (15%)", totalsX, currentY+3, labelWidth)
-	drawText(&pdf, fmt.Sprintf("%.0f", invoice.TotalWithVAT), totalsX+labelWidth, currentY+3, valueWidth)
-	currentY += 24
+	pdf.SetTextColor(0, 0, 0)
+	
+	totalStr := fmt.Sprintf("%.0f", invoice.TotalWithVAT)
+	totalStrW, _ := pdf.MeasureTextWidth(totalStr)
+	pdf.SetXY(totalsX+(valueWidth-totalStrW)/2, currentY+5)
+	pdf.Cell(nil, totalStr)
+	
+	totalLbl := arabictext.Process("المجموع مع الضريبة (15%)")
+	totalLblW, _ := pdf.MeasureTextWidth(totalLbl)
+	pdf.SetXY(totalsX+valueWidth+(labelWidth-totalLblW)/2, currentY+5)
+	pdf.Cell(nil, totalLbl)
+	currentY += 22
 
 	// ===== FOOTER =====
 	pdf.SetFont("Amiri", "", 7)
-	pdf.SetTextColor(150, 150, 150)
-	footerText := ">>>>>>>>>>>>>> إغلاق الفاتورة 0100 <<<<<<<<<<<<<<<"
+	pdf.SetTextColor(0, 0, 0)
+	footerText := ">>>>>>>>>>>>>> إغلاق الفاتورة 0010 <<<<<<<<<<<<<<<"
 	drawText(&pdf, footerText, margin, currentY, contentWidth)
-	currentY += 14
+	currentY += 12
 
 	// ===== QR CODE =====
 	qrFile := "/tmp/temp_qr.png"
