@@ -10,7 +10,7 @@ func TestParseJSON(t *testing.T) {
 			"vatPercentage": 15,
 			"currencySymbol": "SAR",
 			"dateFormat": "2006/01/02",
-			"language": "en"
+			"english": true
 		},
 		"invoice": {
 			"title": "Test Invoice",
@@ -93,7 +93,7 @@ func TestParseJSON(t *testing.T) {
 
 func TestParseJSON_ArabicRTL(t *testing.T) {
 	jsonData := []byte(`{
-		"config": {"vatPercentage": 15, "language": "ar"},
+		"config": {"vatPercentage": 15},
 		"invoice": {"title": "فاتورة", "invoiceNumber": "1", "storeName": "متجر", "storeAddress": "عنوان", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr"},
 		"products": [],
 		"labels": {"invoiceNumber": "", "date": "", "vatRegistration": "", "totalTaxable": "", "totalWithVat": "", "productColumn": "", "quantityColumn": "", "unitPriceColumn": "", "vatAmountColumn": "", "totalColumn": "", "footer": ""}

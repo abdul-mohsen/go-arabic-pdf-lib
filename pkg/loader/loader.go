@@ -32,9 +32,13 @@ func ParseJSON(data []byte) (models.Invoice, error) {
 // BuildInvoice creates a complete Invoice from InvoiceData, calculating all derived values.
 func BuildInvoice(data models.InvoiceData) models.Invoice {
 	vatRate := data.Config.VATPercentage / 100.0
-	language := data.Config.Language
-	if language == "" {
-		language = "ar" // Default to Arabic
+	
+	// Default is Arabic (RTL), English requires explicit flag
+	language := "ar"
+	isRTL := true
+	if data.Config.English {
+		language = "en"
+		isRTL = false
 	}
 
 	// Calculate product values
@@ -74,6 +78,6 @@ func BuildInvoice(data models.InvoiceData) models.Invoice {
 		VATPercentage:     data.Config.VATPercentage,
 		Labels:            data.Labels,
 		Language:          language,
-		IsRTL:             language == "ar" || language == "he",
+		IsRTL:             isRTL,
 	}
 }
