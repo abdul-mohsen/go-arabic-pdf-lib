@@ -3,7 +3,7 @@
     "vatPercentage": 15,
     "currencySymbol": "SAR",
     "dateFormat": "2006/01/02",
-    "language": "en"
+    "english": true
   },
   "invoice": {
     "title": "Simplified Tax Invoice",

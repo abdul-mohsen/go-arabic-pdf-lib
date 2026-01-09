@@ -6,7 +6,7 @@ type Config struct {
 	VATPercentage  float64 `json:"vatPercentage"`
 	CurrencySymbol string  `json:"currencySymbol"`
 	DateFormat     string  `json:"dateFormat"`
-	Language       string  `json:"language"` // "ar" for Arabic, "en" for English
+	English        bool    `json:"english"` // false (default) = Arabic RTL, true = English LTR
 }
 
 // ProductInput represents a product from JSON input (without calculated fields).
