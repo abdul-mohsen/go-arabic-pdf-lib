@@ -341,7 +341,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 		
 		currentY += rowHeight
 	}
-	currentY += 6
+	currentY += 8
 
 	// ===== TOTALS SECTION =====
 	totalsWidth := tableWidth
@@ -359,38 +359,16 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	pdf.SetTextColor(0, 0, 0)
 	taxableStr := fmt.Sprintf("%.0f", invoice.TotalTaxableAmt)
 	taxableW, _ := pdf.MeasureTextWidth(taxableStr)
-	pdf.SetXY(totalsX+(valueWidth-taxableW)/2, currentY+3)
+	pdf.SetXY(totalsX+valueWidth-taxableW-3, currentY+3)
 	pdf.Cell(nil, taxableStr)
 	
 	taxableLbl := arabictext.Process("اجمالي المبلغ الخاضع للضريبة")
 	taxableLblW, _ := pdf.MeasureTextWidth(taxableLbl)
-	pdf.SetXY(totalsX+valueWidth+(labelWidth-taxableLblW)/2, currentY+3)
+	pdf.SetXY(totalsX+valueWidth+labelWidth-taxableLblW-3, currentY+3)
 	pdf.Cell(nil, taxableLbl)
 	currentY += 16
 
-	// Row 2: VAT Amount (15%) - 16pt height
-	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 16, "D")
-	pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, currentY, labelWidth, 16, "D")
-	
-	vatTotalStr := fmt.Sprintf("%.0f", invoice.TotalVAT)
-	vatTotalW, _ := pdf.MeasureTextWidth(vatTotalStr)
-	pdf.SetXY(totalsX+(valueWidth-vatTotalW)/2, currentY+3)
-	pdf.Cell(nil, vatTotalStr)
-	
-	// Fix: Don't reverse the percentage - write it separately
-	vatLbl := arabictext.Process("ضريبة القيمة المضافة")
-	vatPct := "(15%)" // Keep percentage as-is, don't process with Arabic
-	vatLblW, _ := pdf.MeasureTextWidth(vatLbl)
-	pctW, _ := pdf.MeasureTextWidth(vatPct)
-	totalLblWidth := vatLblW + pctW + 3
-	startX := totalsX + valueWidth + (labelWidth-totalLblWidth)/2
-	pdf.SetXY(startX, currentY+3)
-	pdf.Cell(nil, vatPct)
-	pdf.SetXY(startX+pctW+3, currentY+3)
-	pdf.Cell(nil, vatLbl)
-	currentY += 16
-
-	// Row 3: Total with VAT (bold border, 18pt height)
+	// Row 2: Total with VAT (bold border, 18pt height)
 	pdf.SetLineWidth(1.0)
 	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 18, "D")
 	pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, currentY, labelWidth, 18, "D")
@@ -402,20 +380,19 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	
 	totalStr := fmt.Sprintf("%.0f", invoice.TotalWithVAT)
 	totalStrW, _ := pdf.MeasureTextWidth(totalStr)
-	pdf.SetXY(totalsX+(valueWidth-totalStrW)/2, currentY+4)
+	pdf.SetXY(totalsX+valueWidth-totalStrW-3, currentY+4)
 	pdf.Cell(nil, totalStr)
 	
-	// Fix: Don't reverse the percentage
+	// Arabic label with percentage - right aligned
 	totalLbl := arabictext.Process("المجموع مع الضريبة")
 	totalPct := "(15%)"
 	totalLblW, _ := pdf.MeasureTextWidth(totalLbl)
 	totalPctW, _ := pdf.MeasureTextWidth(totalPct)
-	totalFullWidth := totalLblW + totalPctW + 3
-	totalStartX := totalsX + valueWidth + (labelWidth-totalFullWidth)/2
-	pdf.SetXY(totalStartX, currentY+4)
-	pdf.Cell(nil, totalPct)
-	pdf.SetXY(totalStartX+totalPctW+3, currentY+4)
+	// Right align: label then percentage
+	pdf.SetXY(totalsX+valueWidth+labelWidth-totalLblW-3, currentY+4)
 	pdf.Cell(nil, totalLbl)
+	pdf.SetXY(totalsX+valueWidth+labelWidth-totalLblW-totalPctW-6, currentY+4)
+	pdf.Cell(nil, totalPct)
 	currentY += 22
 
 	// ===== FOOTER =====
