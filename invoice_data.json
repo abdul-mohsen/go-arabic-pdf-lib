@@ -2,7 +2,8 @@
   "config": {
     "vatPercentage": 15,
     "currencySymbol": "ر.س",
-    "dateFormat": "2006/01/02"
+    "dateFormat": "2006/01/02",
+    "language": "ar"
   },
   "invoice": {
     "title": "فاتورة ضريبية مبسطة",
