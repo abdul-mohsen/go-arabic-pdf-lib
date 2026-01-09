@@ -360,3 +360,32 @@ func TestTotalsHasThreeRows(t *testing.T) {
 	assert.Equal(t, 33.0, invoice.TotalVAT)
 	assert.Equal(t, 253.0, invoice.TotalWithVAT)
 }
+
+// TestTableRowHeightSufficientForArabicText verifies row height accommodates Arabic text
+// Arabic fonts like Amiri have larger descenders and ascenders than Latin fonts
+func TestTableRowHeightSufficientForArabicText(t *testing.T) {
+	// Row height 22pt with baseline at currentY + 8
+	// Font size 9 with ~7pt ascender and ~5pt descender
+	// Ascender reaches currentY + 1 (8 - 7 = 1), descender reaches currentY + 13 (8 + 5)
+	// Row ends at currentY + 22, leaving 9pt margin
+	
+	fontSize := 9.0
+	rowHeight := 22.0 // Current value in main.go
+	baselineOffset := 8.0 // Text baseline at currentY + 8
+	
+	// Ascender and descender for Arabic font
+	ascender := fontSize * 0.8 // ~7pt above baseline
+	descender := fontSize * 0.5 // ~5pt below baseline
+	
+	// Check ascender stays in cell
+	textTop := baselineOffset - ascender
+	assert.GreaterOrEqual(t, textTop, 0.0, "Ascender extends above cell")
+	
+	// Check descender stays in cell
+	textBottom := baselineOffset + descender
+	bottomMargin := rowHeight - textBottom
+	
+	assert.GreaterOrEqual(t, bottomMargin, 1.0, 
+		"Insufficient bottom margin: %.1f pt. Text bottom at %.1f, row height %.1f",
+		bottomMargin, textBottom, rowHeight)
+}

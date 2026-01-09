@@ -287,8 +287,8 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	currentY += headerHeight
 
 	// Table Rows
-	pdf.SetFont("Amiri", "", 10)
-	rowHeight := 16.0
+	pdf.SetFont("Amiri", "", 9)
+	rowHeight := 18.0
 
 	for _, product := range invoice.Products {
 		pdf.SetStrokeColor(0, 0, 0)
@@ -300,42 +300,44 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 			xPos += colWidths[i]
 		}
 		
-		// Draw text
+		// Draw text - position text higher in cell to prevent bottom overflow
+		// Using +3 offset from cell top to keep descenders within cell
 		pdf.SetTextColor(0, 0, 0)
 		xPos = tableX
+		textY := currentY + 3
 		
 		// Column 0: Total with VAT
 		totalStr := fmt.Sprintf("%.1f", product.TotalWithVAT)
 		tw, _ := pdf.MeasureTextWidth(totalStr)
-		pdf.SetXY(xPos+(colWidths[0]-tw)/2, currentY+4)
+		pdf.SetXY(xPos+(colWidths[0]-tw)/2, textY)
 		pdf.Cell(nil, totalStr)
 		xPos += colWidths[0]
 		
 		// Column 1: VAT Amount
 		vatStr := fmt.Sprintf("%.1f", product.VATAmount)
 		vw, _ := pdf.MeasureTextWidth(vatStr)
-		pdf.SetXY(xPos+(colWidths[1]-vw)/2, currentY+4)
+		pdf.SetXY(xPos+(colWidths[1]-vw)/2, textY)
 		pdf.Cell(nil, vatStr)
 		xPos += colWidths[1]
 		
 		// Column 2: Unit Price
 		priceStr := fmt.Sprintf("%.0f", product.UnitPrice)
 		pw, _ := pdf.MeasureTextWidth(priceStr)
-		pdf.SetXY(xPos+(colWidths[2]-pw)/2, currentY+4)
+		pdf.SetXY(xPos+(colWidths[2]-pw)/2, textY)
 		pdf.Cell(nil, priceStr)
 		xPos += colWidths[2]
 		
 		// Column 3: Quantity
 		qtyStr := fmt.Sprintf("%.0f", product.Quantity)
 		qw, _ := pdf.MeasureTextWidth(qtyStr)
-		pdf.SetXY(xPos+(colWidths[3]-qw)/2, currentY+4)
+		pdf.SetXY(xPos+(colWidths[3]-qw)/2, textY)
 		pdf.Cell(nil, qtyStr)
 		xPos += colWidths[3]
 		
 		// Column 4: Product Name (Arabic)
 		nameText := arabictext.Process(product.Name)
 		nw, _ := pdf.MeasureTextWidth(nameText)
-		pdf.SetXY(xPos+(colWidths[4]-nw)/2, currentY+4)
+		pdf.SetXY(xPos+(colWidths[4]-nw)/2, textY)
 		pdf.Cell(nil, nameText)
 		
 		currentY += rowHeight
@@ -348,7 +350,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	valueWidth := 40.0
 	labelWidth := totalsWidth - valueWidth
 
-	// Row 1: Taxable Amount
+	// Row 1: Taxable Amount (16pt height)
 	pdf.SetStrokeColor(0, 0, 0)
 	pdf.SetLineWidth(0.5)
 	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 16, "D")
@@ -358,22 +360,22 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	pdf.SetTextColor(0, 0, 0)
 	taxableStr := fmt.Sprintf("%.0f", invoice.TotalTaxableAmt)
 	taxableW, _ := pdf.MeasureTextWidth(taxableStr)
-	pdf.SetXY(totalsX+(valueWidth-taxableW)/2, currentY+4)
+	pdf.SetXY(totalsX+(valueWidth-taxableW)/2, currentY+3)
 	pdf.Cell(nil, taxableStr)
 	
 	taxableLbl := arabictext.Process("اجمالي المبلغ الخاضع للضريبة")
 	taxableLblW, _ := pdf.MeasureTextWidth(taxableLbl)
-	pdf.SetXY(totalsX+valueWidth+(labelWidth-taxableLblW)/2, currentY+4)
+	pdf.SetXY(totalsX+valueWidth+(labelWidth-taxableLblW)/2, currentY+3)
 	pdf.Cell(nil, taxableLbl)
 	currentY += 16
 
-	// Row 2: VAT Amount (15%)
+	// Row 2: VAT Amount (15%) - 16pt height
 	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 16, "D")
 	pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, currentY, labelWidth, 16, "D")
 	
 	vatTotalStr := fmt.Sprintf("%.0f", invoice.TotalVAT)
 	vatTotalW, _ := pdf.MeasureTextWidth(vatTotalStr)
-	pdf.SetXY(totalsX+(valueWidth-vatTotalW)/2, currentY+4)
+	pdf.SetXY(totalsX+(valueWidth-vatTotalW)/2, currentY+3)
 	pdf.Cell(nil, vatTotalStr)
 	
 	// Fix: Don't reverse the percentage - write it separately
@@ -383,13 +385,13 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	pctW, _ := pdf.MeasureTextWidth(vatPct)
 	totalLblWidth := vatLblW + pctW + 3
 	startX := totalsX + valueWidth + (labelWidth-totalLblWidth)/2
-	pdf.SetXY(startX, currentY+4)
+	pdf.SetXY(startX, currentY+3)
 	pdf.Cell(nil, vatPct)
-	pdf.SetXY(startX+pctW+3, currentY+4)
+	pdf.SetXY(startX+pctW+3, currentY+3)
 	pdf.Cell(nil, vatLbl)
 	currentY += 16
 
-	// Row 3: Total with VAT (bold border)
+	// Row 3: Total with VAT (bold border, 18pt height)
 	pdf.SetLineWidth(1.0)
 	pdf.RectFromUpperLeftWithStyle(totalsX, currentY, valueWidth, 18, "D")
 	pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, currentY, labelWidth, 18, "D")
@@ -401,7 +403,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	
 	totalStr := fmt.Sprintf("%.0f", invoice.TotalWithVAT)
 	totalStrW, _ := pdf.MeasureTextWidth(totalStr)
-	pdf.SetXY(totalsX+(valueWidth-totalStrW)/2, currentY+5)
+	pdf.SetXY(totalsX+(valueWidth-totalStrW)/2, currentY+4)
 	pdf.Cell(nil, totalStr)
 	
 	// Fix: Don't reverse the percentage
@@ -411,9 +413,9 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	totalPctW, _ := pdf.MeasureTextWidth(totalPct)
 	totalFullWidth := totalLblW + totalPctW + 3
 	totalStartX := totalsX + valueWidth + (labelWidth-totalFullWidth)/2
-	pdf.SetXY(totalStartX, currentY+5)
+	pdf.SetXY(totalStartX, currentY+4)
 	pdf.Cell(nil, totalPct)
-	pdf.SetXY(totalStartX+totalPctW+3, currentY+5)
+	pdf.SetXY(totalStartX+totalPctW+3, currentY+4)
 	pdf.Cell(nil, totalLbl)
 	currentY += 22
 
