@@ -130,72 +130,6 @@ func TestProductDetails(t *testing.T) {
 	assert.Equal(t, 115.0, invoice.Products[2].TotalWithVAT)
 }
 
-func TestReverseString(t *testing.T) {
-	tests := []struct {
-		input    string
-		expected string
-	}{
-		{"hello", "olleh"},
-		{"world", "dlrow"},
-		{"123", "321"},
-		{"", ""},
-		{"a", "a"},
-	}
-
-	for _, tt := range tests {
-		result := reverseString(tt.input)
-		assert.Equal(t, tt.expected, result)
-	}
-}
-
-func TestIsArabic(t *testing.T) {
-	// Test Arabic characters
-	assert.True(t, isArabic('ا'))
-	assert.True(t, isArabic('ب'))
-	assert.True(t, isArabic('ت'))
-	assert.True(t, isArabic('م'))
-	
-	// Test non-Arabic characters
-	assert.False(t, isArabic('a'))
-	assert.False(t, isArabic('1'))
-	assert.False(t, isArabic(' '))
-	assert.False(t, isArabic('!'))
-}
-
-func TestHasArabic(t *testing.T) {
-	assert.True(t, hasArabic("مرحبا"))
-	assert.True(t, hasArabic("Hello مرحبا World"))
-	assert.False(t, hasArabic("Hello World"))
-	assert.False(t, hasArabic("12345"))
-	assert.False(t, hasArabic(""))
-}
-
-func TestReshapeArabic(t *testing.T) {
-	// Test that reshaping produces output
-	reshaped := reshapeArabic("مرحبا")
-	assert.NotEmpty(t, reshaped)
-	
-	// Test that non-Arabic text is unchanged
-	assert.Equal(t, "hello", reshapeArabic("hello"))
-	assert.Equal(t, "123", reshapeArabic("123"))
-}
-
-func TestPrepareText(t *testing.T) {
-	// Non-Arabic text should remain unchanged
-	assert.Equal(t, "hello", prepareText("hello"))
-	assert.Equal(t, "123", prepareText("123"))
-	
-	// Arabic text should be transformed
-	arabicResult := prepareText("مرحبا")
-	assert.NotEqual(t, "مرحبا", arabicResult) // Should be reshaped and reversed
-}
-
-func TestPrepareArabicText(t *testing.T) {
-	result := prepareArabicText("اسم")
-	assert.NotEmpty(t, result)
-	// The result should be reshaped and reversed
-}
-
 func TestInvoiceStructure(t *testing.T) {
 	invoice := generateSampleInvoice()
 
@@ -210,25 +144,16 @@ func TestInvoiceStructure(t *testing.T) {
 	assert.NotEmpty(t, invoice.Products)
 }
 
-func TestArabicFormsMap(t *testing.T) {
-	// Verify common Arabic letters have forms defined
-	commonLetters := []rune{'ا', 'ب', 'ت', 'م', 'ن', 'ل'}
-	for _, letter := range commonLetters {
-		forms, exists := arabicForms[letter]
-		assert.True(t, exists, "Forms should exist for letter: %c", letter)
-		assert.Equal(t, 4, len(forms), "Each letter should have 4 forms")
-	}
-}
+func TestGenerateFallbackPDF(t *testing.T) {
+	invoice := generateSampleInvoice()
+	filename := "test_fallback.pdf"
 
-func TestNonConnectingLetters(t *testing.T) {
-	// Verify non-connecting letters are defined
-	assert.True(t, nonConnectingLetters['ا'])
-	assert.True(t, nonConnectingLetters['د'])
-	assert.True(t, nonConnectingLetters['ر'])
-	assert.True(t, nonConnectingLetters['و'])
-	
-	// Verify connecting letters are not in the map
-	assert.False(t, nonConnectingLetters['ب'])
-	assert.False(t, nonConnectingLetters['ت'])
-	assert.False(t, nonConnectingLetters['م'])
+	defer os.Remove(filename)
+
+	err := generateFallbackPDF(invoice, filename)
+	require.NoError(t, err, "Fallback PDF generation should not return an error")
+
+	info, err := os.Stat(filename)
+	require.NoError(t, err, "Fallback PDF file should be created")
+	assert.Greater(t, info.Size(), int64(100), "Fallback PDF should have content")
 }
