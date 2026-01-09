@@ -87,7 +87,7 @@ func main() {
 // generateSampleInvoice creates a sample invoice matching the Arabic template
 func generateSampleInvoice() Invoice {
 	products := []Product{
-		{Name: "منتج منتج منتج منتج منتج منتجمنتجمنتجمنتجمنتجمنتج 1", Quantity: 1.0, UnitPrice: 50.00, TaxableAmt: 50.00, VATAmount: 7.5, TotalWithVAT: 57.5},
+		{Name: "منتج منتج منتج منتج منتج 1", Quantity: 1.0, UnitPrice: 50.00, TaxableAmt: 50.00, VATAmount: 7.5, TotalWithVAT: 57.5},
 		{Name: "منتج (the world is big an need a lot of help please) 2", Quantity: 1.0, UnitPrice: 70.00, TaxableAmt: 70.00, VATAmount: 10.5, TotalWithVAT: 80.5},
 		{Name: "منتج  fasdf 23R@#$@# @#$ @#$@ 3", Quantity: 1.0, UnitPrice: 100.00, TaxableAmt: 100.00, VATAmount: 15, TotalWithVAT: 115},
 	}
@@ -130,6 +130,61 @@ func drawTextRight(pdf *gopdf.GoPdf, text string, x, y, width float64) {
 	rightX := x + width - textWidth - 2
 	pdf.SetXY(rightX, y)
 	pdf.Cell(nil, processedText)
+}
+
+// wrapText splits text into multiple lines that fit within maxWidth
+// Returns the lines and the total height needed
+func wrapText(pdf *gopdf.GoPdf, text string, maxWidth float64, lineHeight float64) ([]string, float64) {
+	processedText := arabictext.Process(text)
+	
+	// Check if text fits in one line
+	textWidth, _ := pdf.MeasureTextWidth(processedText)
+	if textWidth <= maxWidth {
+		return []string{processedText}, lineHeight
+	}
+	
+	// Need to wrap - split by spaces/characters
+	var lines []string
+	runes := []rune(text)
+	
+	currentLine := ""
+	for i := 0; i < len(runes); i++ {
+		testLine := currentLine + string(runes[i])
+		testProcessed := arabictext.Process(testLine)
+		testWidth, _ := pdf.MeasureTextWidth(testProcessed)
+		
+		if testWidth > maxWidth && currentLine != "" {
+			// Current line is full, save it and start new line
+			lines = append(lines, arabictext.Process(currentLine))
+			currentLine = string(runes[i])
+		} else {
+			currentLine = testLine
+		}
+	}
+	
+	// Add the last line
+	if currentLine != "" {
+		lines = append(lines, arabictext.Process(currentLine))
+	}
+	
+	if len(lines) == 0 {
+		lines = []string{processedText}
+	}
+	
+	return lines, float64(len(lines)) * lineHeight
+}
+
+// drawWrappedTextRight draws wrapped text right-aligned in a cell
+func drawWrappedTextRight(pdf *gopdf.GoPdf, text string, x, y, width, lineHeight float64) float64 {
+	lines, totalHeight := wrapText(pdf, text, width-6, lineHeight) // 6pt padding
+	
+	for i, line := range lines {
+		lineWidth, _ := pdf.MeasureTextWidth(line)
+		pdf.SetXY(x+width-lineWidth-3, y+float64(i)*lineHeight)
+		pdf.Cell(nil, line)
+	}
+	
+	return totalHeight
 }
 
 // GeneratePDF creates the invoice PDF with Arabic RTL support
@@ -217,8 +272,9 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	currentY += 14
 
 	// ===== PRODUCTS TABLE =====
-	// Column widths - use full page width
-	colWidths := []float64{35, 35, 35, 25, 76} // Total, VAT, Price, Qty, Product
+	// Column widths - maximize product name column
+	// Total, VAT, Price, Qty, Product
+	colWidths := []float64{30, 30, 30, 20, 96} // Reduced other columns, increased product to 96
 	tableWidth := 0.0
 	for _, w := range colWidths {
 		tableWidth += w
@@ -281,12 +337,21 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 
 	// Table Rows
 	pdf.SetFont("Amiri", "", 9)
-	rowHeight := 18.0
+	baseRowHeight := 12.0 // Base height per line
+	minRowHeight := 18.0  // Minimum row height
 
 	for _, product := range invoice.Products {
 		pdf.SetStrokeColor(0, 0, 0)
 		
-		// Draw row cells (border only)
+		// Calculate row height based on product name wrapping
+		productColWidth := colWidths[4]
+		_, nameHeight := wrapText(&pdf, product.Name, productColWidth-6, baseRowHeight)
+		rowHeight := nameHeight + 6 // Add padding
+		if rowHeight < minRowHeight {
+			rowHeight = minRowHeight
+		}
+		
+		// Draw row cells (border only) with calculated height
 		xPos = tableX
 		for i := range colWidths {
 			pdf.RectFromUpperLeftWithStyle(xPos, currentY, colWidths[i], rowHeight, "D")
@@ -326,11 +391,8 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 		pdf.Cell(nil, qtyStr)
 		xPos += colWidths[3]
 		
-		// Column 4: Product Name (Arabic, right aligned)
-		nameText := arabictext.Process(product.Name)
-		nw, _ := pdf.MeasureTextWidth(nameText)
-		pdf.SetXY(xPos+colWidths[4]-nw-3, textY)
-		pdf.Cell(nil, nameText)
+		// Column 4: Product Name (Arabic, right aligned, with wrapping)
+		drawWrappedTextRight(&pdf, product.Name, xPos, textY, colWidths[4], baseRowHeight)
 		
 		currentY += rowHeight
 	}
