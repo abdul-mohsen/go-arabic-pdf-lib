@@ -1,0 +1,46 @@
+{
+  "config": {
+    "vatPercentage": 15,
+    "currencySymbol": "ر.س",
+    "dateFormat": "2006/01/02"
+  },
+  "invoice": {
+    "title": "فاتورة ضريبية مبسطة",
+    "invoiceNumber": "INV10111",
+    "storeName": "اسم المتجر",
+    "storeAddress": "عنوان المتجر",
+    "date": "2021/12/12",
+    "vatRegistrationNo": "123456789900003",
+    "qrCodeData": "AQpteSBjb21wYW55Ag8zMTIzNDU2Nzg5MDAwMDMDFDIwMjQtMDEtMTVUMTI6MDA6MDBaBAYyNTMuMDAFBTMzLjAw"
+  },
+  "products": [
+    {
+      "name": "منتج منتج منتج منتج منتج 1",
+      "quantity": 1.0,
+      "unitPrice": 50.00
+    },
+    {
+      "name": "منتج (the world is big an need a lot of help please) 2",
+      "quantity": 1.0,
+      "unitPrice": 70.00
+    },
+    {
+      "name": "منتج  fasdf 23R@#$@# @#$ @#$@ 3",
+      "quantity": 1.0,
+      "unitPrice": 100.00
+    }
+  ],
+  "labels": {
+    "invoiceNumber": "رقم الفاتورة:",
+    "date": "تاريخ:",
+    "vatRegistration": "رقم تسجيل ضريبة القيمة المضافة:",
+    "totalTaxable": "اجمالي المبلغ الخاضع للضريبة",
+    "totalWithVat": "المجموع مع الضريبة",
+    "productColumn": "المنتجات",
+    "quantityColumn": "الكمية",
+    "unitPriceColumn": "سعر الوحدة",
+    "vatAmountColumn": "ضريبة القيمة المضافة",
+    "totalColumn": "السعر شامل الضريبة",
+    "footer": ">>>>>>>>>>>>>> إغلاق الفاتورة 0010 <<<<<<<<<<<<<<<"
+  }
+}
