@@ -300,44 +300,43 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 			xPos += colWidths[i]
 		}
 		
-		// Draw text - position at baseline +5 from cell top
-		// This ensures text TOP is clearly inside current cell, not previous cell
+		// Draw text - position at baseline +3 from cell top (moved up)
 		pdf.SetTextColor(0, 0, 0)
 		xPos = tableX
-		textY := currentY + 5
+		textY := currentY + 3
 		
-		// Column 0: Total with VAT
+		// Column 0: Total with VAT (right aligned)
 		totalStr := fmt.Sprintf("%.1f", product.TotalWithVAT)
 		tw, _ := pdf.MeasureTextWidth(totalStr)
-		pdf.SetXY(xPos+(colWidths[0]-tw)/2, textY)
+		pdf.SetXY(xPos+colWidths[0]-tw-3, textY)
 		pdf.Cell(nil, totalStr)
 		xPos += colWidths[0]
 		
-		// Column 1: VAT Amount
+		// Column 1: VAT Amount (right aligned)
 		vatStr := fmt.Sprintf("%.1f", product.VATAmount)
 		vw, _ := pdf.MeasureTextWidth(vatStr)
-		pdf.SetXY(xPos+(colWidths[1]-vw)/2, textY)
+		pdf.SetXY(xPos+colWidths[1]-vw-3, textY)
 		pdf.Cell(nil, vatStr)
 		xPos += colWidths[1]
 		
-		// Column 2: Unit Price
+		// Column 2: Unit Price (right aligned)
 		priceStr := fmt.Sprintf("%.0f", product.UnitPrice)
 		pw, _ := pdf.MeasureTextWidth(priceStr)
-		pdf.SetXY(xPos+(colWidths[2]-pw)/2, textY)
+		pdf.SetXY(xPos+colWidths[2]-pw-3, textY)
 		pdf.Cell(nil, priceStr)
 		xPos += colWidths[2]
 		
-		// Column 3: Quantity
+		// Column 3: Quantity (right aligned)
 		qtyStr := fmt.Sprintf("%.0f", product.Quantity)
 		qw, _ := pdf.MeasureTextWidth(qtyStr)
-		pdf.SetXY(xPos+(colWidths[3]-qw)/2, textY)
+		pdf.SetXY(xPos+colWidths[3]-qw-3, textY)
 		pdf.Cell(nil, qtyStr)
 		xPos += colWidths[3]
 		
-		// Column 4: Product Name (Arabic)
+		// Column 4: Product Name (Arabic, right aligned)
 		nameText := arabictext.Process(product.Name)
 		nw, _ := pdf.MeasureTextWidth(nameText)
-		pdf.SetXY(xPos+(colWidths[4]-nw)/2, textY)
+		pdf.SetXY(xPos+colWidths[4]-nw-3, textY)
 		pdf.Cell(nil, nameText)
 		
 		currentY += rowHeight
