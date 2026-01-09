@@ -33,9 +33,13 @@ RUN curl -L -o /tmp/amiri.zip https://github.com/aliftype/amiri/releases/downloa
 # Copy binary
 COPY --from=builder /app/bill-generator .
 
+# Copy invoice data JSON
+COPY invoice_data.json .
+
 # Set environment
 ENV OUTPUT_DIR=/app/output
 ENV FONT_DIR=/app/fonts
+ENV DATA_FILE=/app/invoice_data.json
 
 # Run
 CMD ["./bill-generator"]

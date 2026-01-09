@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -10,7 +11,21 @@ import (
 	"github.com/skip2/go-qrcode"
 )
 
-// Product represents a single product line item
+// Config holds global configuration
+type Config struct {
+	VATPercentage  float64 `json:"vatPercentage"`
+	CurrencySymbol string  `json:"currencySymbol"`
+	DateFormat     string  `json:"dateFormat"`
+}
+
+// ProductInput represents a product from JSON (without calculated fields)
+type ProductInput struct {
+	Name      string  `json:"name"`
+	Quantity  float64 `json:"quantity"`
+	UnitPrice float64 `json:"unitPrice"`
+}
+
+// Product represents a single product line item with calculated fields
 type Product struct {
 	Name         string
 	Quantity     float64
@@ -20,7 +35,41 @@ type Product struct {
 	TotalWithVAT float64
 }
 
-// Invoice represents the complete invoice data
+// InvoiceInput represents invoice data from JSON
+type InvoiceInput struct {
+	Title             string `json:"title"`
+	InvoiceNumber     string `json:"invoiceNumber"`
+	StoreName         string `json:"storeName"`
+	StoreAddress      string `json:"storeAddress"`
+	Date              string `json:"date"`
+	VATRegistrationNo string `json:"vatRegistrationNo"`
+	QRCodeData        string `json:"qrCodeData"`
+}
+
+// Labels holds all text labels for the invoice
+type Labels struct {
+	InvoiceNumber   string `json:"invoiceNumber"`
+	Date            string `json:"date"`
+	VATRegistration string `json:"vatRegistration"`
+	TotalTaxable    string `json:"totalTaxable"`
+	TotalWithVat    string `json:"totalWithVat"`
+	ProductColumn   string `json:"productColumn"`
+	QuantityColumn  string `json:"quantityColumn"`
+	UnitPriceColumn string `json:"unitPriceColumn"`
+	VATAmountColumn string `json:"vatAmountColumn"`
+	TotalColumn     string `json:"totalColumn"`
+	Footer          string `json:"footer"`
+}
+
+// InvoiceData represents the complete JSON structure
+type InvoiceData struct {
+	Config   Config         `json:"config"`
+	Invoice  InvoiceInput   `json:"invoice"`
+	Products []ProductInput `json:"products"`
+	Labels   Labels         `json:"labels"`
+}
+
+// Invoice represents the complete invoice with calculated values
 type Invoice struct {
 	Title             string
 	InvoiceNumber     string
@@ -33,6 +82,8 @@ type Invoice struct {
 	TotalVAT          float64
 	TotalWithVAT      float64
 	QRCodeData        string
+	VATPercentage     float64
+	Labels            Labels
 }
 
 func main() {
@@ -46,10 +97,20 @@ func main() {
 		fontDir = "fonts"
 	}
 
+	dataFile := os.Getenv("DATA_FILE")
+	if dataFile == "" {
+		dataFile = "invoice_data.json"
+	}
+
 	filename := outputDir + "/invoice_output.pdf"
 
-	invoice := generateSampleInvoice()
-	err := GeneratePDF(invoice, filename, fontDir)
+	invoice, err := loadInvoiceFromJSON(dataFile)
+	if err != nil {
+		fmt.Printf("ERROR: Failed to load invoice data: %v\n", err)
+		os.Exit(1)
+	}
+
+	err = GeneratePDF(invoice, filename, fontDir)
 	if err != nil {
 		fmt.Printf("ERROR: Failed to generate PDF: %v\n", err)
 		os.Exit(1)
@@ -84,27 +145,57 @@ func main() {
 	fmt.Println("============================================")
 }
 
-// generateSampleInvoice creates a sample invoice matching the Arabic template
-func generateSampleInvoice() Invoice {
-	products := []Product{
-		{Name: "منتج منتج منتج منتج منتج 1", Quantity: 1.0, UnitPrice: 50.00, TaxableAmt: 50.00, VATAmount: 7.5, TotalWithVAT: 57.5},
-		{Name: "منتج (the world is big an need a lot of help please) 2", Quantity: 1.0, UnitPrice: 70.00, TaxableAmt: 70.00, VATAmount: 10.5, TotalWithVAT: 80.5},
-		{Name: "منتج  fasdf 23R@#$@# @#$ @#$@ 3", Quantity: 1.0, UnitPrice: 100.00, TaxableAmt: 100.00, VATAmount: 15, TotalWithVAT: 115},
+// loadInvoiceFromJSON loads invoice data from a JSON file and calculates VAT
+func loadInvoiceFromJSON(filename string) (Invoice, error) {
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return Invoice{}, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var invoiceData InvoiceData
+	if err := json.Unmarshal(data, &invoiceData); err != nil {
+		return Invoice{}, fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	vatRate := invoiceData.Config.VATPercentage / 100.0
+
+	// Calculate product values
+	var products []Product
+	var totalTaxable, totalVAT float64
+
+	for _, p := range invoiceData.Products {
+		taxableAmt := p.Quantity * p.UnitPrice
+		vatAmount := taxableAmt * vatRate
+		totalWithVAT := taxableAmt + vatAmount
+
+		products = append(products, Product{
+			Name:         p.Name,
+			Quantity:     p.Quantity,
+			UnitPrice:    p.UnitPrice,
+			TaxableAmt:   taxableAmt,
+			VATAmount:    vatAmount,
+			TotalWithVAT: totalWithVAT,
+		})
+
+		totalTaxable += taxableAmt
+		totalVAT += vatAmount
 	}
 
 	return Invoice{
-		Title:             "فاتورة ضريبية مبسطة",
-		InvoiceNumber:     "INV10111",
-		StoreName:         "اسم المتجر",
-		StoreAddress:      "عنوان المتجر",
-		Date:              "2021/12/12",
-		VATRegistrationNo: "123456789900003",
+		Title:             invoiceData.Invoice.Title,
+		InvoiceNumber:     invoiceData.Invoice.InvoiceNumber,
+		StoreName:         invoiceData.Invoice.StoreName,
+		StoreAddress:      invoiceData.Invoice.StoreAddress,
+		Date:              invoiceData.Invoice.Date,
+		VATRegistrationNo: invoiceData.Invoice.VATRegistrationNo,
 		Products:          products,
-		TotalTaxableAmt:   220.00,
-		TotalVAT:          33.00,
-		TotalWithVAT:      253.00,
-		QRCodeData:        "AQpteSBjb21wYW55Ag8zMTIzNDU2Nzg5MDAwMDMDFDIwMjQtMDEtMTVUMTI6MDA6MDBaBAYyNTMuMDAFBTMzLjAw",
-	}
+		TotalTaxableAmt:   totalTaxable,
+		TotalVAT:          totalVAT,
+		TotalWithVAT:      totalTaxable + totalVAT,
+		QRCodeData:        invoiceData.Invoice.QRCodeData,
+		VATPercentage:     invoiceData.Config.VATPercentage,
+		Labels:            invoiceData.Labels,
+	}, nil
 }
 
 // drawText draws text centered in a given width, handling Arabic RTL
@@ -229,7 +320,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	// ===== INVOICE NUMBER =====
 	pdf.SetFont("Amiri", "", 9)
 	pdf.SetTextColor(0, 0, 0)
-	labelText := arabictext.Process("رقم الفاتورة:")
+	labelText := arabictext.Process(invoice.Labels.InvoiceNumber)
 	labelW, _ := pdf.MeasureTextWidth(labelText)
 	pdf.SetXY(margin+contentWidth-labelW-3, currentY)
 	pdf.Cell(nil, labelText)
@@ -252,7 +343,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 
 	// ===== DATE =====
 	pdf.SetFont("Amiri", "", 9)
-	dateLabelText := arabictext.Process("تاريخ:")
+	dateLabelText := arabictext.Process(invoice.Labels.Date)
 	dateLabelW, _ := pdf.MeasureTextWidth(dateLabelText)
 	pdf.SetXY(margin+contentWidth-dateLabelW-3, currentY)
 	pdf.Cell(nil, dateLabelText)
@@ -263,7 +354,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	// ===== VAT REGISTRATION (no border, just text) =====
 	pdf.SetFont("Amiri", "", 8)
 	// Draw as single line: number on left, label on right
-	vatLabelText := arabictext.Process("رقم تسجيل ضريبة القيمة المضافة:")
+	vatLabelText := arabictext.Process(invoice.Labels.VATRegistration)
 	vatLabelW, _ := pdf.MeasureTextWidth(vatLabelText)
 	pdf.SetXY(margin+contentWidth-vatLabelW, currentY)
 	pdf.Cell(nil, vatLabelText)
@@ -417,7 +508,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	pdf.SetXY(totalsX+valueWidth-taxableW-3, currentY+3)
 	pdf.Cell(nil, taxableStr)
 	
-	taxableLbl := arabictext.Process("اجمالي المبلغ الخاضع للضريبة")
+	taxableLbl := arabictext.Process(invoice.Labels.TotalTaxable)
 	taxableLblW, _ := pdf.MeasureTextWidth(taxableLbl)
 	pdf.SetXY(totalsX+valueWidth+labelWidth-taxableLblW-2, currentY)
 	pdf.Cell(nil, taxableLbl)
@@ -439,8 +530,8 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	pdf.Cell(nil, totalStr)
 	
 	// Arabic label with percentage - right aligned
-	totalLbl := arabictext.Process("المجموع مع الضريبة")
-	totalPct := "(15%)"
+	totalLbl := arabictext.Process(invoice.Labels.TotalWithVat)
+	totalPct := fmt.Sprintf("(%.0f%%)", invoice.VATPercentage)
 	totalLblW, _ := pdf.MeasureTextWidth(totalLbl)
 	totalPctW, _ := pdf.MeasureTextWidth(totalPct)
 	// Right align: label then percentage
@@ -453,7 +544,7 @@ func GeneratePDF(invoice Invoice, filename string, fontDir string) error {
 	// ===== FOOTER =====
 	pdf.SetFont("Amiri", "", 7)
 	pdf.SetTextColor(0, 0, 0)
-	footerText := ">>>>>>>>>>>>>> إغلاق الفاتورة 0010 <<<<<<<<<<<<<<<"
+	footerText := invoice.Labels.Footer
 	drawText(&pdf, footerText, margin, currentY, contentWidth)
 	currentY += 12
 
