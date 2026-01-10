@@ -11,19 +11,25 @@ type Config struct {
 
 // ProductInput represents a product from JSON input (without calculated fields).
 type ProductInput struct {
-	Name      string  `json:"name"`
-	Quantity  float64 `json:"quantity"`
-	UnitPrice float64 `json:"unitPrice"`
+	Name            string  `json:"name"`
+	Quantity        float64 `json:"quantity"`
+	UnitPrice       float64 `json:"unitPrice"`
+	DiscountPercent float64 `json:"discountPercent,omitempty"` // Discount percentage (0-100)
+	DiscountAmount  float64 `json:"discountAmount,omitempty"`  // Fixed discount amount
 }
 
 // Product represents a single product line item with calculated fields.
 type Product struct {
-	Name         string
-	Quantity     float64
-	UnitPrice    float64
-	TaxableAmt   float64
-	VATAmount    float64
-	TotalWithVAT float64
+	Name            string
+	Quantity        float64
+	UnitPrice       float64
+	DiscountPercent float64
+	DiscountAmount  float64
+	GrossAmount     float64 // Quantity * UnitPrice (before discount)
+	NetAmount       float64 // After discount, before VAT
+	TaxableAmt      float64 // Same as NetAmount
+	VATAmount       float64
+	TotalWithVAT    float64
 }
 
 // InvoiceInput represents invoice header data from JSON input.
@@ -47,8 +53,10 @@ type Labels struct {
 	ProductColumn   string `json:"productColumn"`
 	QuantityColumn  string `json:"quantityColumn"`
 	UnitPriceColumn string `json:"unitPriceColumn"`
+	DiscountColumn  string `json:"discountColumn,omitempty"`
 	VATAmountColumn string `json:"vatAmountColumn"`
 	TotalColumn     string `json:"totalColumn"`
+	TotalDiscount   string `json:"totalDiscount,omitempty"`
 	Footer          string `json:"footer"`
 }
 
@@ -69,7 +77,9 @@ type Invoice struct {
 	Date              string
 	VATRegistrationNo string
 	Products          []Product
-	TotalTaxableAmt   float64
+	TotalGross        float64 // Sum of all gross amounts (before discounts)
+	TotalDiscount     float64 // Sum of all discounts
+	TotalTaxableAmt   float64 // Sum of net amounts (after discounts)
 	TotalVAT          float64
 	TotalWithVAT      float64
 	QRCodeData        string

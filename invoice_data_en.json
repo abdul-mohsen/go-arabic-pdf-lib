@@ -18,12 +18,14 @@
     {
       "name": "Product 1 with a very long name that needs wrapping",
       "quantity": 1.0,
-      "unitPrice": 50.00
+      "unitPrice": 50.00,
+      "discountPercent": 10
     },
     {
       "name": "Product 2 (the world is big and needs a lot of help please)",
       "quantity": 1.0,
-      "unitPrice": 70.00
+      "unitPrice": 70.00,
+      "discountAmount": 5.00
     },
     {
       "name": "Product 3 with special chars @#$%",
@@ -40,8 +42,10 @@
     "productColumn": "Products",
     "quantityColumn": "Qty",
     "unitPriceColumn": "Unit Price",
+    "discountColumn": "Discount",
     "vatAmountColumn": "VAT Amount",
     "totalColumn": "Total (inc. VAT)",
+    "totalDiscount": "Total Discount",
     "footer": ">>>>>>>>>>>>>> Invoice Closed 0010 <<<<<<<<<<<<<<<"
   }
 }
