@@ -144,3 +144,105 @@ func TestParseJSON_InvalidJSON(t *testing.T) {
 		t.Error("Expected error for invalid JSON")
 	}
 }
+
+func TestParseJSON_DiscountPercent(t *testing.T) {
+	jsonData := []byte(`{
+		"config": {"vatPercentage": 15},
+		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr"},
+		"products": [
+			{"name": "Product", "quantity": 1, "unitPrice": 100, "discountPercent": 10}
+		],
+		"labels": {"invoiceNumber": "", "date": "", "vatRegistration": "", "totalTaxable": "", "totalWithVat": "", "productColumn": "", "quantityColumn": "", "unitPriceColumn": "", "vatAmountColumn": "", "totalColumn": "", "footer": ""}
+	}`)
+
+	invoice, err := ParseJSON(jsonData)
+	if err != nil {
+		t.Fatalf("ParseJSON failed: %v", err)
+	}
+
+	p := invoice.Products[0]
+
+	// Gross: 100, Discount: 10% = 10, Net: 90, VAT: 13.5, Total: 103.5
+	if p.GrossAmount != 100 {
+		t.Errorf("Expected gross 100, got %.2f", p.GrossAmount)
+	}
+	if p.DiscountAmount != 10 {
+		t.Errorf("Expected discount 10, got %.2f", p.DiscountAmount)
+	}
+	if p.NetAmount != 90 {
+		t.Errorf("Expected net 90, got %.2f", p.NetAmount)
+	}
+	if p.VATAmount != 13.5 {
+		t.Errorf("Expected VAT 13.5, got %.2f", p.VATAmount)
+	}
+	if p.TotalWithVAT != 103.5 {
+		t.Errorf("Expected total 103.5, got %.2f", p.TotalWithVAT)
+	}
+
+	// Check totals
+	if invoice.TotalGross != 100 {
+		t.Errorf("Expected total gross 100, got %.2f", invoice.TotalGross)
+	}
+	if invoice.TotalDiscount != 10 {
+		t.Errorf("Expected total discount 10, got %.2f", invoice.TotalDiscount)
+	}
+}
+
+func TestParseJSON_DiscountAmount(t *testing.T) {
+	jsonData := []byte(`{
+		"config": {"vatPercentage": 15},
+		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr"},
+		"products": [
+			{"name": "Product", "quantity": 1, "unitPrice": 100, "discountAmount": 20}
+		],
+		"labels": {"invoiceNumber": "", "date": "", "vatRegistration": "", "totalTaxable": "", "totalWithVat": "", "productColumn": "", "quantityColumn": "", "unitPriceColumn": "", "vatAmountColumn": "", "totalColumn": "", "footer": ""}
+	}`)
+
+	invoice, err := ParseJSON(jsonData)
+	if err != nil {
+		t.Fatalf("ParseJSON failed: %v", err)
+	}
+
+	p := invoice.Products[0]
+
+	// Gross: 100, Discount: 20, Net: 80, VAT: 12, Total: 92
+	if p.DiscountAmount != 20 {
+		t.Errorf("Expected discount 20, got %.2f", p.DiscountAmount)
+	}
+	if p.NetAmount != 80 {
+		t.Errorf("Expected net 80, got %.2f", p.NetAmount)
+	}
+	if p.VATAmount != 12 {
+		t.Errorf("Expected VAT 12, got %.2f", p.VATAmount)
+	}
+	if p.TotalWithVAT != 92 {
+		t.Errorf("Expected total 92, got %.2f", p.TotalWithVAT)
+	}
+}
+
+func TestParseJSON_CombinedDiscount(t *testing.T) {
+	jsonData := []byte(`{
+		"config": {"vatPercentage": 15},
+		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr"},
+		"products": [
+			{"name": "Product", "quantity": 1, "unitPrice": 100, "discountPercent": 10, "discountAmount": 5}
+		],
+		"labels": {"invoiceNumber": "", "date": "", "vatRegistration": "", "totalTaxable": "", "totalWithVat": "", "productColumn": "", "quantityColumn": "", "unitPriceColumn": "", "vatAmountColumn": "", "totalColumn": "", "footer": ""}
+	}`)
+
+	invoice, err := ParseJSON(jsonData)
+	if err != nil {
+		t.Fatalf("ParseJSON failed: %v", err)
+	}
+
+	p := invoice.Products[0]
+
+	// Gross: 100, Discount: 10% (10) + 5 = 15, Net: 85, VAT: 12.75, Total: 97.75
+	if p.DiscountAmount != 15 {
+		t.Errorf("Expected discount 15, got %.2f", p.DiscountAmount)
+	}
+	if p.NetAmount != 85 {
+		t.Errorf("Expected net 85, got %.2f", p.NetAmount)
+	}
+}
+

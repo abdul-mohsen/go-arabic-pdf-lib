@@ -42,7 +42,7 @@ type ProductInput = models.ProductInput
 type Labels = models.Labels
 
 // Config holds invoice configuration options.
-type Config = models.InvoiceConfig
+type Config = models.Config
 
 // Generator creates PDF invoices.
 type Generator struct {
@@ -143,7 +143,7 @@ type Builder struct {
 func NewBuilder() *Builder {
 	return &Builder{
 		data: models.InvoiceData{
-			Config: models.InvoiceConfig{
+			Config: models.Config{
 				VATPercentage: 15.0, // Default VAT
 			},
 		},
