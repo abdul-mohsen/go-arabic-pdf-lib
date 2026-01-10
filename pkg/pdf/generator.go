@@ -447,3 +447,48 @@ func (g *Generator) drawQRCode() {
 		os.Remove(qrFile)
 	}
 }
+
+// GenerateBytes creates a PDF from the invoice and returns it as bytes.
+func (g *Generator) GenerateBytes(invoice models.Invoice) ([]byte, error) {
+	g.invoice = invoice
+	g.contentW = g.pageW - (2 * g.margin)
+	g.currentY = 10.0
+
+	// Initialize PDF
+	g.pdf = gopdf.GoPdf{}
+	g.pdf.Start(gopdf.Config{
+		PageSize: gopdf.Rect{W: 226.77, H: 708.66}, // 80mm x 250mm
+	})
+
+	// Load fonts
+	if err := g.loadFonts(); err != nil {
+		return nil, err
+	}
+
+	g.pdf.AddPage()
+
+	// Draw invoice sections
+	g.drawHeader()
+	g.drawInvoiceInfo()
+	g.drawProductsTable()
+	g.drawTotals()
+	g.drawFooter()
+	g.drawQRCode()
+
+	return g.pdf.GetBytesPdf(), nil
+}
+
+// --- Package-level convenience functions ---
+
+// GenerateInvoice creates a PDF invoice and saves it to a file.
+func GenerateInvoice(invoice models.Invoice, filename, fontDir string) error {
+	gen := NewGenerator(fontDir)
+	return gen.Generate(invoice, filename)
+}
+
+// GenerateInvoiceBytes creates a PDF invoice and returns it as bytes.
+func GenerateInvoiceBytes(invoice models.Invoice, fontDir string) ([]byte, error) {
+	gen := NewGenerator(fontDir)
+	return gen.GenerateBytes(invoice)
+}
+

@@ -32,7 +32,7 @@ func ParseJSON(data []byte) (models.Invoice, error) {
 // BuildInvoice creates a complete Invoice from InvoiceData, calculating all derived values.
 func BuildInvoice(data models.InvoiceData) models.Invoice {
 	vatRate := data.Config.VATPercentage / 100.0
-	
+
 	// Default is Arabic (RTL), English requires explicit flag
 	language := "ar"
 	isRTL := true
@@ -41,25 +41,43 @@ func BuildInvoice(data models.InvoiceData) models.Invoice {
 		isRTL = false
 	}
 
-	// Calculate product values
+	// Calculate product values with discount support
 	products := make([]models.Product, 0, len(data.Products))
-	var totalTaxable, totalVAT float64
+	var totalGross, totalDiscount, totalTaxable, totalVAT float64
 
 	for _, p := range data.Products {
-		taxableAmt := p.Quantity * p.UnitPrice
-		vatAmount := taxableAmt * vatRate
-		totalWithVAT := taxableAmt + vatAmount
+		// Calculate gross amount (before discount)
+		grossAmount := p.Quantity * p.UnitPrice
+
+		// Calculate discount: percentage discount + fixed discount
+		discountAmt := (grossAmount * p.DiscountPercent / 100.0) + p.DiscountAmount
+
+		// Net amount after discount is the taxable amount
+		netAmount := grossAmount - discountAmt
+		if netAmount < 0 {
+			netAmount = 0 // Prevent negative amounts
+		}
+
+		// VAT is calculated on net amount (after discount)
+		vatAmount := netAmount * vatRate
+		totalWithVAT := netAmount + vatAmount
 
 		products = append(products, models.Product{
-			Name:         p.Name,
-			Quantity:     p.Quantity,
-			UnitPrice:    p.UnitPrice,
-			TaxableAmt:   taxableAmt,
-			VATAmount:    vatAmount,
-			TotalWithVAT: totalWithVAT,
+			Name:            p.Name,
+			Quantity:        p.Quantity,
+			UnitPrice:       p.UnitPrice,
+			DiscountPercent: p.DiscountPercent,
+			DiscountAmount:  discountAmt,
+			GrossAmount:     grossAmount,
+			NetAmount:       netAmount,
+			TaxableAmt:      netAmount,
+			VATAmount:       vatAmount,
+			TotalWithVAT:    totalWithVAT,
 		})
 
-		totalTaxable += taxableAmt
+		totalGross += grossAmount
+		totalDiscount += discountAmt
+		totalTaxable += netAmount
 		totalVAT += vatAmount
 	}
 
@@ -71,6 +89,8 @@ func BuildInvoice(data models.InvoiceData) models.Invoice {
 		Date:              data.Invoice.Date,
 		VATRegistrationNo: data.Invoice.VATRegistrationNo,
 		Products:          products,
+		TotalGross:        totalGross,
+		TotalDiscount:     totalDiscount,
 		TotalTaxableAmt:   totalTaxable,
 		TotalVAT:          totalVAT,
 		TotalWithVAT:      totalTaxable + totalVAT,

@@ -1,35 +1,121 @@
-# Arabic Tax Invoice PDF Generator (فاتورة ضريبية مبسطة)
+# Bill Generator Library
 
-Pixel-perfect Arabic tax invoice generator matching Saudi ZATCA requirements.
+A Go library for generating PDF invoices with full Arabic RTL support, English LTR support, VAT calculations, and discount handling.
 
 ![Go Version](https://img.shields.io/badge/Go-1.21-blue)
-![Tests](https://img.shields.io/badge/tests-11%20passing-green)
-![Coverage](https://img.shields.io/badge/coverage-24.8%25-yellow)
 ![Docker](https://img.shields.io/badge/docker-ready-blue)
 
 ## Features
 
-- ✅ **Arabic RTL Text Support** - Full Arabic text rendering with Amiri font
-- ✅ **15% VAT Calculation** - Automatic VAT calculations per KSA requirements
-- ✅ **QR Code Generation** - Base64-encoded invoice data for e-invoicing
-- ✅ **Receipt Format** - 80mm thermal printer compatible
-- ✅ **Docker Support** - Multi-stage build for production deployment
-- ✅ **Unit Tests** - Comprehensive test coverage
+- 🌍 **Bilingual Support**: Arabic (RTL) and English (LTR)
+- 💰 **VAT Calculations**: Automatic VAT computation
+- 🏷️ **Discount Support**: Percentage and fixed amount discounts
+- 📄 **PDF Generation**: Clean, print-ready thermal receipt style invoices
+- 📱 **QR Code**: Embedded QR codes for e-invoicing compliance
+- 🎨 **Customizable Labels**: Full i18n support for all text labels
+- 🔧 **Component-Based Architecture**: Extensible design with reusable components
 
-## Sample Output
+## Installation
 
-The generated invoice includes:
-- Green header with "فاتورة ضريبية مبسطة" (Simplified Tax Invoice)
-- Invoice number and date
-- Store name (اسم المتجر) and address (عنوان المتجر)
-- VAT registration number
-- Products table with Arabic headers
-- Totals section with VAT breakdown
-- QR code for invoice validation
+```bash
+go get github.com/yourusername/bill-generator
+```
 
 ## Quick Start
 
-### Run with Docker (Recommended)
+### Option 1: Generate from JSON file
+
+```go
+package main
+
+import (
+    "log"
+    "bill-generator/pkg/invoice"
+)
+
+func main() {
+    // Set font path (required for Arabic support)
+    invoice.SetDefaultFontPath("/path/to/fonts")
+    
+    // Generate invoice from JSON file
+    err := invoice.GenerateFromFile("invoice_data.json", "output/invoice.pdf")
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### Option 2: Use the Builder pattern
+
+```go
+package main
+
+import (
+    "log"
+    "bill-generator/pkg/invoice"
+)
+
+func main() {
+    gen := invoice.NewGenerator(
+        invoice.WithFontPath("/fonts"),
+    )
+    
+    // Build invoice programmatically
+    inv := invoice.NewBuilder().
+        WithTitle("Tax Invoice").
+        WithInvoiceNumber("INV-001").
+        WithStoreName("My Store").
+        WithStoreAddress("123 Main Street").
+        WithDate("2024/01/15").
+        WithVATRegistration("123456789").
+        WithVATPercentage(15.0).
+        WithQRCode("base64-encoded-qr-data").
+        WithEnglish(). // Use English (LTR), omit for Arabic (RTL)
+        WithLabels(invoice.DefaultEnglishLabels()).
+        AddProduct("Product A", 2, 50.00).
+        AddProductWithDiscount("Product B", 1, 100.00, 10, 0). // 10% discount
+        AddProductWithDiscount("Product C", 1, 80.00, 0, 5.00). // $5 fixed discount
+        Build()
+    
+    err := gen.Generate(inv, "output/invoice.pdf")
+    if err != nil {
+        log.Fatal(err)
+    }
+}
+```
+
+### Option 3: Generate PDF as bytes (for web services)
+
+```go
+package main
+
+import (
+    "net/http"
+    "bill-generator/pkg/invoice"
+)
+
+func handler(w http.ResponseWriter, r *http.Request) {
+    gen := invoice.NewGenerator(invoice.WithFontPath("/fonts"))
+    
+    inv := invoice.NewBuilder().
+        WithTitle("Tax Invoice").
+        WithInvoiceNumber("INV-001").
+        // ... configure invoice
+        Build()
+    
+    pdfBytes, err := gen.GenerateBytes(inv)
+    if err != nil {
+        http.Error(w, err.Error(), 500)
+        return
+    }
+    
+    w.Header().Set("Content-Type", "application/pdf")
+    w.Header().Set("Content-Disposition", "attachment; filename=invoice.pdf")
+    w.Write(pdfBytes)
+}
+```
+
+## Run with Docker
 
 ```powershell
 # Windows
@@ -40,38 +126,234 @@ docker build -t bill-generator .
 docker run --rm -v "${PWD}/output:/app/output" bill-generator
 ```
 
-### Run with Docker Compose
+## JSON Schema
 
-```bash
-docker-compose up bill-generator
+```json
+{
+  "config": {
+    "vatPercentage": 15,
+    "currencySymbol": "SAR",
+    "dateFormat": "2006/01/02",
+    "english": true
+  },
+  "invoice": {
+    "title": "Tax Invoice",
+    "invoiceNumber": "INV-001",
+    "storeName": "Store Name",
+    "storeAddress": "Store Address",
+    "date": "2024/01/15",
+    "vatRegistrationNo": "123456789",
+    "qrCodeData": "base64-encoded-data"
+  },
+  "products": [
+    {
+      "name": "Product Name",
+      "quantity": 2.0,
+      "unitPrice": 50.00,
+      "discountPercent": 10,
+      "discountAmount": 0
+    }
+  ],
+  "labels": {
+    "invoiceNumber": "Invoice Number:",
+    "date": "Date:",
+    "vatRegistration": "VAT Registration:",
+    "totalTaxable": "Total Taxable",
+    "totalWithVat": "Total with VAT",
+    "productColumn": "Product",
+    "quantityColumn": "Qty",
+    "unitPriceColumn": "Unit Price",
+    "discountColumn": "Discount",
+    "vatAmountColumn": "VAT",
+    "totalColumn": "Total",
+    "totalDiscount": "Total Discount",
+    "footer": "Thank you for your business"
+  }
+}
 ```
 
-### Run Tests
+## Discount Calculations
 
-```bash
-# With Docker
-docker run --rm -v "${PWD}:/app" -w /app golang:1.21-alpine go test -v -cover
+Discounts are applied before VAT calculation:
 
-# Output: 11 tests passing, 24.8% coverage
+1. **Gross Amount** = Quantity × Unit Price
+2. **Discount** = (Gross × Discount%) + Fixed Discount Amount
+3. **Net Amount** = Gross - Discount
+4. **VAT** = Net Amount × VAT Rate
+5. **Total** = Net Amount + VAT
+
+Example:
+- Product: 100 SAR, 10% discount, 15% VAT
+- Gross: 100.00
+- Discount: 10.00 (10%)
+- Net: 90.00
+- VAT: 13.50 (15% of 90)
+- Total: 103.50
+
+## Language Support
+
+### Arabic (Default - RTL)
+
+```go
+// Arabic is the default, no flag needed
+inv := invoice.NewBuilder().
+    WithTitle("فاتورة ضريبية مبسطة").
+    WithLabels(invoice.DefaultArabicLabels()).
+    // ...
+    Build()
+```
+
+### English (LTR)
+
+```go
+// Set english flag
+inv := invoice.NewBuilder().
+    WithEnglish().
+    WithLabels(invoice.DefaultEnglishLabels()).
+    // ...
+    Build()
+```
+
+Or in JSON:
+```json
+{
+  "config": {
+    "english": true
+  }
+}
+```
+
+## Component Architecture
+
+The library uses a component-based architecture for extensibility:
+
+```go
+import "bill-generator/pkg/component"
+
+// Components implement the Component interface
+type Component interface {
+    Draw(pdf *gopdf.GoPdf) float64
+}
+
+// Available components:
+// - TextBlock: Simple text rendering
+// - LabelValuePair: Label-value pairs
+// - Header: Centered header text
+// - WrappedText: Multi-line text with wrapping
+// - Table: Data tables with columns
+// - TotalsTable: Summary/totals tables
+// - QRCode: QR code rendering
+
+// Use functional options for configuration
+text := component.NewTextBlock("Hello World",
+    component.WithPosition(10, 10),
+    component.WithFontSize(12),
+    component.WithBold(true),
+    component.WithAlignment(component.AlignCenter),
+)
 ```
 
 ## Project Structure
 
 ```
-bill/
-├── main.go              # Main application with PDF generation
-├── main_test.go         # Unit tests (11 tests)
-├── go.mod               # Go module definition
-├── go.sum               # Dependency checksums
-├── Dockerfile           # Multi-stage production build
-├── Dockerfile.test      # Test container
-├── docker-compose.yml   # Compose configuration
-├── run-docker.ps1       # PowerShell build script
-├── README.md            # This file
-├── output/              # Generated PDFs
-└── scripts/
-    ├── download-fonts.ps1   # Windows font download
-    └── download-fonts.sh    # Linux font download
+bill-generator/
+├── pkg/
+│   ├── invoice/      # Main library API
+│   ├── component/    # Reusable PDF components
+│   ├── models/       # Data structures
+│   ├── loader/       # JSON loading and parsing
+│   ├── pdf/          # PDF generation
+│   └── textutil/     # Text processing utilities
+├── arabictext/       # Arabic text reshaping
+├── cmd/
+│   └── generator/    # CLI tool
+├── invoice_data.json     # Arabic sample
+├── invoice_data_en.json  # English sample
+└── output/               # Generated PDFs
+```
+
+## API Reference
+
+### Generator
+
+```go
+// Create a new generator
+gen := invoice.NewGenerator(
+    invoice.WithFontPath("/fonts"),
+)
+
+// Generate to file
+err := gen.GenerateFromFile("input.json", "output.pdf")
+err := gen.GenerateFromJSON(jsonData, "output.pdf")
+err := gen.Generate(inv, "output.pdf")
+
+// Generate to bytes
+pdfBytes, err := gen.GenerateBytes(inv)
+```
+
+### Builder
+
+```go
+builder := invoice.NewBuilder()
+
+// Configuration
+builder.WithTitle(title string)
+builder.WithInvoiceNumber(number string)
+builder.WithStoreName(name string)
+builder.WithStoreAddress(address string)
+builder.WithDate(date string)
+builder.WithVATRegistration(vatNo string)
+builder.WithQRCode(data string)
+builder.WithVATPercentage(percentage float64)
+builder.WithEnglish()
+builder.WithArabic()
+builder.WithLabels(labels Labels)
+
+// Products
+builder.AddProduct(name string, quantity, unitPrice float64)
+builder.AddProductWithDiscount(name string, quantity, unitPrice, discountPercent, discountAmount float64)
+
+// Build
+inv := builder.Build()
+```
+
+### Models
+
+```go
+// Invoice - complete calculated invoice
+type Invoice struct {
+    Title             string
+    InvoiceNumber     string
+    StoreName         string
+    StoreAddress      string
+    Date              string
+    VATRegistrationNo string
+    Products          []Product
+    TotalGross        float64
+    TotalDiscount     float64
+    TotalTaxableAmt   float64
+    TotalVAT          float64
+    TotalWithVAT      float64
+    QRCodeData        string
+    VATPercentage     float64
+    Labels            Labels
+    Language          string
+    IsRTL             bool
+}
+
+// Product - calculated product line
+type Product struct {
+    Name            string
+    Quantity        float64
+    UnitPrice       float64
+    DiscountPercent float64
+    DiscountAmount  float64
+    GrossAmount     float64
+    NetAmount       float64
+    TaxableAmt      float64
+    VATAmount       float64
+    TotalWithVAT    float64
+}
 ```
 
 ## Dependencies
@@ -81,71 +363,6 @@ bill/
 | `github.com/signintech/gopdf` | PDF generation with Unicode support |
 | `github.com/skip2/go-qrcode` | QR code generation |
 | `github.com/stretchr/testify` | Testing assertions |
-
-## API
-
-### Invoice Structure
-
-```go
-type Invoice struct {
-    Title             string    // Invoice title (Arabic)
-    InvoiceNumber     string    // Invoice reference number
-    StoreName         string    // Store name (Arabic)
-    StoreAddress      string    // Store address (Arabic)
-    Date              string    // Invoice date (YYYY/MM/DD)
-    VATRegistrationNo string    // VAT registration number
-    Products          []Product // Line items
-    TotalTaxableAmt   float64   // Subtotal before VAT
-    TotalVAT          float64   // Total VAT amount
-    TotalWithVAT      float64   // Grand total
-    QRCodeData        string    // Base64 QR data
-}
-```
-
-### Product Structure
-
-```go
-type Product struct {
-    Name         string  // Product name (Arabic)
-    Quantity     float64 // Quantity
-    UnitPrice    float64 // Unit price
-    TaxableAmt   float64 // Taxable amount
-    VATAmount    float64 // VAT (15%)
-    TotalWithVAT float64 // Total with VAT
-}
-```
-
-## Git Workflow
-
-This project follows Git best practices:
-
-```
-master
-├── Initial commit: Basic invoice PDF generator
-└── Merge feature/arabic-rtl-support
-    └── feat: Add Arabic RTL support with gopdf library
-```
-
-### Branch Strategy
-- `master` - Production-ready code
-- `feature/*` - New features (merged with `--no-ff`)
-- `fix/*` - Bug fixes
-- `docs/*` - Documentation updates
-
-## Quality Score
-
-| Aspect | Score | Notes |
-|--------|-------|-------|
-| Code Readability | 8/10 | Clean Go code with comments |
-| Test Coverage | 8/10 | 11 tests, 24.8% coverage |
-| Error Handling | 8/10 | Graceful fallback when fonts unavailable |
-| Project Structure | 9/10 | Well-organized with Docker support |
-| Build System | 9/10 | Docker multi-stage build |
-| Documentation | 9/10 | Comprehensive README |
-| Modularity | 8/10 | Clear function separation |
-| CI/CD Ready | 9/10 | Docker-based, easy to integrate |
-
-**Overall: 85/100** ⭐⭐⭐⭐
 
 ## License
 

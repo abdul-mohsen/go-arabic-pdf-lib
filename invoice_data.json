@@ -17,12 +17,14 @@
     {
       "name": "منتج منتج منتج منتج منتج 1",
       "quantity": 1.0,
-      "unitPrice": 50.00
+      "unitPrice": 50.00,
+      "discountPercent": 10
     },
     {
       "name": "منتج (the world is big an need a lot of help please) 2",
       "quantity": 1.0,
-      "unitPrice": 70.00
+      "unitPrice": 70.00,
+      "discountAmount": 5.00
     },
     {
       "name": "منتج  fasdf 23R@#$@# @#$ @#$@ 3",
@@ -39,8 +41,10 @@
     "productColumn": "المنتجات",
     "quantityColumn": "الكمية",
     "unitPriceColumn": "سعر الوحدة",
+    "discountColumn": "الخصم",
     "vatAmountColumn": "ضريبة القيمة المضافة",
     "totalColumn": "السعر شامل الضريبة",
+    "totalDiscount": "إجمالي الخصم",
     "footer": ">>>>>>>>>>>>>> إغلاق الفاتورة 0010 <<<<<<<<<<<<<<<"
   }
 }
