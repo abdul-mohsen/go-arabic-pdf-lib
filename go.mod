@@ -1,4 +1,4 @@
-module bill-generator
+module github.com/abdul-mohsen/go-arabic-pdf-lib
 
 go 1.21
 
