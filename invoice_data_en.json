@@ -12,25 +12,36 @@
     "storeAddress": "Store Address",
     "date": "2021/12/12",
     "vatRegistrationNo": "123456789900003",
-    "qrCodeData": "AQpteSBjb21wYW55Ag8zMTIzNDU2Nzg5MDAwMDMDFDIwMjQtMDEtMTVUMTI6MDA6MDBaBAYyNTMuMDAFBTMzLjAw"
+    "qrCodeData": "AQpteSBjb21wYW55Ag8zMTIzNDU2Nzg5MDAwMDMDFDIwMjQtMDEtMTVUMTI6MDA6MDBaBAYyNTMuMDAFBTMzLjAw",
+    "totalDiscount": 10.0,
+    "totalTaxable": 195.0,
+    "totalVat": 29.25,
+    "totalWithVat": 224.25
   },
   "products": [
     {
       "name": "Product 1 with a very long name that needs wrapping",
       "quantity": 1.0,
       "unitPrice": 50.00,
-      "discountPercent": 10
+      "discount": 5.0,
+      "vatAmount": 6.75,
+      "total": 51.75
     },
     {
       "name": "Product 2 (the world is big and needs a lot of help please)",
       "quantity": 1.0,
       "unitPrice": 70.00,
-      "discountAmount": 5.00
+      "discount": 5.0,
+      "vatAmount": 9.75,
+      "total": 74.75
     },
     {
       "name": "Product 3 with special chars @#$%",
       "quantity": 1.0,
-      "unitPrice": 100.00
+      "unitPrice": 100.00,
+      "discount": 0,
+      "vatAmount": 15.0,
+      "total": 115.0
     }
   ],
   "labels": {

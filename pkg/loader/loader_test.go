@@ -5,6 +5,7 @@ import (
 )
 
 func TestParseJSON(t *testing.T) {
+	// All values are pre-calculated - this library is for visualization only
 	jsonData := []byte(`{
 		"config": {
 			"vatPercentage": 15,
@@ -19,11 +20,15 @@ func TestParseJSON(t *testing.T) {
 			"storeAddress": "123 Test St",
 			"date": "2024/01/15",
 			"vatRegistrationNo": "123456789",
-			"qrCodeData": "test-qr-data"
+			"qrCodeData": "test-qr-data",
+			"totalDiscount": 10.0,
+			"totalTaxable": 190.0,
+			"totalVat": 28.5,
+			"totalWithVat": 218.5
 		},
 		"products": [
-			{"name": "Product 1", "quantity": 2, "unitPrice": 50},
-			{"name": "Product 2", "quantity": 1, "unitPrice": 100}
+			{"name": "Product 1", "quantity": 2, "unitPrice": 50, "discount": 5.0, "vatAmount": 14.25, "total": 109.25},
+			{"name": "Product 2", "quantity": 1, "unitPrice": 100, "discount": 5.0, "vatAmount": 14.25, "total": 109.25}
 		],
 		"labels": {
 			"invoiceNumber": "Invoice #:",
@@ -34,8 +39,10 @@ func TestParseJSON(t *testing.T) {
 			"productColumn": "Product",
 			"quantityColumn": "Qty",
 			"unitPriceColumn": "Price",
+			"discountColumn": "Discount",
 			"vatAmountColumn": "VAT",
 			"totalColumn": "Total",
+			"totalDiscount": "Total Discount",
 			"footer": "Thank you!"
 		}
 	}`)
@@ -58,43 +65,42 @@ func TestParseJSON(t *testing.T) {
 		t.Error("Expected IsRTL to be false for English")
 	}
 
-	// Check product calculations
+	// Check products are passed through correctly
 	if len(invoice.Products) != 2 {
 		t.Fatalf("Expected 2 products, got %d", len(invoice.Products))
 	}
 
-	// Product 1: 2 * 50 = 100, VAT = 15, Total = 115
-	if invoice.Products[0].TaxableAmt != 100 {
-		t.Errorf("Expected taxable 100, got %.2f", invoice.Products[0].TaxableAmt)
+	// Verify product values are passed through (not calculated)
+	p1 := invoice.Products[0]
+	if p1.Discount != 5.0 {
+		t.Errorf("Expected discount 5.0, got %.2f", p1.Discount)
 	}
-	if invoice.Products[0].VATAmount != 15 {
-		t.Errorf("Expected VAT 15, got %.2f", invoice.Products[0].VATAmount)
+	if p1.VATAmount != 14.25 {
+		t.Errorf("Expected VAT 14.25, got %.2f", p1.VATAmount)
 	}
-	if invoice.Products[0].TotalWithVAT != 115 {
-		t.Errorf("Expected total 115, got %.2f", invoice.Products[0].TotalWithVAT)
-	}
-
-	// Product 2: 1 * 100 = 100, VAT = 15, Total = 115
-	if invoice.Products[1].TotalWithVAT != 115 {
-		t.Errorf("Expected total 115, got %.2f", invoice.Products[1].TotalWithVAT)
+	if p1.Total != 109.25 {
+		t.Errorf("Expected total 109.25, got %.2f", p1.Total)
 	}
 
-	// Check totals: 200 taxable, 30 VAT, 230 total
-	if invoice.TotalTaxableAmt != 200 {
-		t.Errorf("Expected total taxable 200, got %.2f", invoice.TotalTaxableAmt)
+	// Check totals are passed through
+	if invoice.TotalDiscount != 10.0 {
+		t.Errorf("Expected total discount 10.0, got %.2f", invoice.TotalDiscount)
 	}
-	if invoice.TotalVAT != 30 {
-		t.Errorf("Expected total VAT 30, got %.2f", invoice.TotalVAT)
+	if invoice.TotalTaxableAmt != 190.0 {
+		t.Errorf("Expected total taxable 190.0, got %.2f", invoice.TotalTaxableAmt)
 	}
-	if invoice.TotalWithVAT != 230 {
-		t.Errorf("Expected total with VAT 230, got %.2f", invoice.TotalWithVAT)
+	if invoice.TotalVAT != 28.5 {
+		t.Errorf("Expected total VAT 28.5, got %.2f", invoice.TotalVAT)
+	}
+	if invoice.TotalWithVAT != 218.5 {
+		t.Errorf("Expected total with VAT 218.5, got %.2f", invoice.TotalWithVAT)
 	}
 }
 
 func TestParseJSON_ArabicRTL(t *testing.T) {
 	jsonData := []byte(`{
 		"config": {"vatPercentage": 15},
-		"invoice": {"title": "فاتورة", "invoiceNumber": "1", "storeName": "متجر", "storeAddress": "عنوان", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr"},
+		"invoice": {"title": "فاتورة", "invoiceNumber": "1", "storeName": "متجر", "storeAddress": "عنوان", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr", "totalTaxable": 100, "totalVat": 15, "totalWithVat": 115},
 		"products": [],
 		"labels": {"invoiceNumber": "", "date": "", "vatRegistration": "", "totalTaxable": "", "totalWithVat": "", "productColumn": "", "quantityColumn": "", "unitPriceColumn": "", "vatAmountColumn": "", "totalColumn": "", "footer": ""}
 	}`)
@@ -116,7 +122,7 @@ func TestParseJSON_ArabicRTL(t *testing.T) {
 func TestParseJSON_DefaultLanguage(t *testing.T) {
 	jsonData := []byte(`{
 		"config": {"vatPercentage": 15},
-		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr"},
+		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr", "totalTaxable": 100, "totalVat": 15, "totalWithVat": 115},
 		"products": [],
 		"labels": {"invoiceNumber": "", "date": "", "vatRegistration": "", "totalTaxable": "", "totalWithVat": "", "productColumn": "", "quantityColumn": "", "unitPriceColumn": "", "vatAmountColumn": "", "totalColumn": "", "footer": ""}
 	}`)
@@ -145,12 +151,12 @@ func TestParseJSON_InvalidJSON(t *testing.T) {
 	}
 }
 
-func TestParseJSON_DiscountPercent(t *testing.T) {
+func TestParseJSON_ProductWithDiscount(t *testing.T) {
 	jsonData := []byte(`{
 		"config": {"vatPercentage": 15},
-		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr"},
+		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr", "totalDiscount": 10.0, "totalTaxable": 90, "totalVat": 13.5, "totalWithVat": 103.5},
 		"products": [
-			{"name": "Product", "quantity": 1, "unitPrice": 100, "discountPercent": 10}
+			{"name": "Product", "quantity": 1, "unitPrice": 100, "discount": 10, "vatAmount": 13.5, "total": 103.5}
 		],
 		"labels": {"invoiceNumber": "", "date": "", "vatRegistration": "", "totalTaxable": "", "totalWithVat": "", "productColumn": "", "quantityColumn": "", "unitPriceColumn": "", "vatAmountColumn": "", "totalColumn": "", "footer": ""}
 	}`)
@@ -162,38 +168,29 @@ func TestParseJSON_DiscountPercent(t *testing.T) {
 
 	p := invoice.Products[0]
 
-	// Gross: 100, Discount: 10% = 10, Net: 90, VAT: 13.5, Total: 103.5
-	if p.GrossAmount != 100 {
-		t.Errorf("Expected gross 100, got %.2f", p.GrossAmount)
-	}
-	if p.DiscountAmount != 10 {
-		t.Errorf("Expected discount 10, got %.2f", p.DiscountAmount)
-	}
-	if p.NetAmount != 90 {
-		t.Errorf("Expected net 90, got %.2f", p.NetAmount)
+	// All values should be passed through exactly as provided
+	if p.Discount != 10 {
+		t.Errorf("Expected discount 10, got %.2f", p.Discount)
 	}
 	if p.VATAmount != 13.5 {
 		t.Errorf("Expected VAT 13.5, got %.2f", p.VATAmount)
 	}
-	if p.TotalWithVAT != 103.5 {
-		t.Errorf("Expected total 103.5, got %.2f", p.TotalWithVAT)
+	if p.Total != 103.5 {
+		t.Errorf("Expected total 103.5, got %.2f", p.Total)
 	}
 
-	// Check totals
-	if invoice.TotalGross != 100 {
-		t.Errorf("Expected total gross 100, got %.2f", invoice.TotalGross)
-	}
-	if invoice.TotalDiscount != 10 {
-		t.Errorf("Expected total discount 10, got %.2f", invoice.TotalDiscount)
+	// Check totals passed through
+	if invoice.TotalDiscount != 10.0 {
+		t.Errorf("Expected total discount 10.0, got %.2f", invoice.TotalDiscount)
 	}
 }
 
-func TestParseJSON_DiscountAmount(t *testing.T) {
+func TestParseJSON_NoDiscount(t *testing.T) {
 	jsonData := []byte(`{
 		"config": {"vatPercentage": 15},
-		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr"},
+		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr", "totalTaxable": 100, "totalVat": 15, "totalWithVat": 115},
 		"products": [
-			{"name": "Product", "quantity": 1, "unitPrice": 100, "discountAmount": 20}
+			{"name": "Product", "quantity": 1, "unitPrice": 100, "vatAmount": 15, "total": 115}
 		],
 		"labels": {"invoiceNumber": "", "date": "", "vatRegistration": "", "totalTaxable": "", "totalWithVat": "", "productColumn": "", "quantityColumn": "", "unitPriceColumn": "", "vatAmountColumn": "", "totalColumn": "", "footer": ""}
 	}`)
@@ -205,44 +202,13 @@ func TestParseJSON_DiscountAmount(t *testing.T) {
 
 	p := invoice.Products[0]
 
-	// Gross: 100, Discount: 20, Net: 80, VAT: 12, Total: 92
-	if p.DiscountAmount != 20 {
-		t.Errorf("Expected discount 20, got %.2f", p.DiscountAmount)
+	// Discount should be 0 when not provided
+	if p.Discount != 0 {
+		t.Errorf("Expected discount 0, got %.2f", p.Discount)
 	}
-	if p.NetAmount != 80 {
-		t.Errorf("Expected net 80, got %.2f", p.NetAmount)
-	}
-	if p.VATAmount != 12 {
-		t.Errorf("Expected VAT 12, got %.2f", p.VATAmount)
-	}
-	if p.TotalWithVAT != 92 {
-		t.Errorf("Expected total 92, got %.2f", p.TotalWithVAT)
+
+	// Total discount should be 0
+	if invoice.TotalDiscount != 0 {
+		t.Errorf("Expected total discount 0, got %.2f", invoice.TotalDiscount)
 	}
 }
-
-func TestParseJSON_CombinedDiscount(t *testing.T) {
-	jsonData := []byte(`{
-		"config": {"vatPercentage": 15},
-		"invoice": {"title": "Test", "invoiceNumber": "1", "storeName": "Store", "storeAddress": "Addr", "date": "2024/01/01", "vatRegistrationNo": "123", "qrCodeData": "qr"},
-		"products": [
-			{"name": "Product", "quantity": 1, "unitPrice": 100, "discountPercent": 10, "discountAmount": 5}
-		],
-		"labels": {"invoiceNumber": "", "date": "", "vatRegistration": "", "totalTaxable": "", "totalWithVat": "", "productColumn": "", "quantityColumn": "", "unitPriceColumn": "", "vatAmountColumn": "", "totalColumn": "", "footer": ""}
-	}`)
-
-	invoice, err := ParseJSON(jsonData)
-	if err != nil {
-		t.Fatalf("ParseJSON failed: %v", err)
-	}
-
-	p := invoice.Products[0]
-
-	// Gross: 100, Discount: 10% (10) + 5 = 15, Net: 85, VAT: 12.75, Total: 97.75
-	if p.DiscountAmount != 15 {
-		t.Errorf("Expected discount 15, got %.2f", p.DiscountAmount)
-	}
-	if p.NetAmount != 85 {
-		t.Errorf("Expected net 85, got %.2f", p.NetAmount)
-	}
-}
-

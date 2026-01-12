@@ -216,25 +216,26 @@ func (b *Builder) WithLabels(labels Labels) *Builder {
 	return b
 }
 
-// AddProduct adds a product to the invoice.
-func (b *Builder) AddProduct(name string, quantity float64, unitPrice float64) *Builder {
+// AddProduct adds a product to the invoice with pre-calculated values.
+// This library is for visualization only - all values must be pre-calculated.
+func (b *Builder) AddProduct(name string, quantity, unitPrice, discount, vatAmount, total float64) *Builder {
 	b.data.Products = append(b.data.Products, models.ProductInput{
 		Name:      name,
 		Quantity:  quantity,
 		UnitPrice: unitPrice,
+		Discount:  discount,
+		VATAmount: vatAmount,
+		Total:     total,
 	})
 	return b
 }
 
-// AddProductWithDiscount adds a product with a discount.
-func (b *Builder) AddProductWithDiscount(name string, quantity, unitPrice, discountPercent, discountAmount float64) *Builder {
-	b.data.Products = append(b.data.Products, models.ProductInput{
-		Name:            name,
-		Quantity:        quantity,
-		UnitPrice:       unitPrice,
-		DiscountPercent: discountPercent,
-		DiscountAmount:  discountAmount,
-	})
+// WithTotals sets the pre-calculated totals for the invoice.
+func (b *Builder) WithTotals(totalDiscount, totalTaxable, totalVAT, totalWithVAT float64) *Builder {
+	b.data.Invoice.TotalDiscount = totalDiscount
+	b.data.Invoice.TotalTaxable = totalTaxable
+	b.data.Invoice.TotalVAT = totalVAT
+	b.data.Invoice.TotalWithVAT = totalWithVAT
 	return b
 }
 

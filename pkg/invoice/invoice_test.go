@@ -20,6 +20,7 @@ func TestBuilder_BasicFields(t *testing.T) {
 		WithDate("2024/01/15").
 		WithVATRegistration("123456789").
 		WithQRCode("test-qr").
+		WithTotals(10.0, 190.0, 28.5, 218.5).
 		Build()
 
 	if inv.Title != "Test Invoice" {
@@ -39,10 +40,28 @@ func TestBuilder_BasicFields(t *testing.T) {
 	}
 }
 
-func TestBuilder_VATCalculation(t *testing.T) {
+func TestBuilder_Totals(t *testing.T) {
 	inv := NewBuilder().
-		WithVATPercentage(15.0).
-		AddProduct("Product 1", 1, 100.00).
+		WithTotals(10.0, 190.0, 28.5, 218.5).
+		Build()
+
+	if inv.TotalDiscount != 10.0 {
+		t.Errorf("Expected total discount 10.0, got %.2f", inv.TotalDiscount)
+	}
+	if inv.TotalTaxableAmt != 190.0 {
+		t.Errorf("Expected total taxable 190.0, got %.2f", inv.TotalTaxableAmt)
+	}
+	if inv.TotalVAT != 28.5 {
+		t.Errorf("Expected total VAT 28.5, got %.2f", inv.TotalVAT)
+	}
+	if inv.TotalWithVAT != 218.5 {
+		t.Errorf("Expected total with VAT 218.5, got %.2f", inv.TotalWithVAT)
+	}
+}
+
+func TestBuilder_AddProduct(t *testing.T) {
+	inv := NewBuilder().
+		AddProduct("Product 1", 2, 50.00, 5.0, 14.25, 109.25).
 		Build()
 
 	if len(inv.Products) != 1 {
@@ -50,41 +69,23 @@ func TestBuilder_VATCalculation(t *testing.T) {
 	}
 
 	p := inv.Products[0]
-	// 100 * 15% = 15 VAT, Total = 115
-	if p.TaxableAmt != 100 {
-		t.Errorf("Expected taxable 100, got %.2f", p.TaxableAmt)
+	if p.Name != "Product 1" {
+		t.Errorf("Expected name 'Product 1', got '%s'", p.Name)
 	}
-	if p.VATAmount != 15 {
-		t.Errorf("Expected VAT 15, got %.2f", p.VATAmount)
+	if p.Quantity != 2 {
+		t.Errorf("Expected quantity 2, got %.2f", p.Quantity)
 	}
-	if p.TotalWithVAT != 115 {
-		t.Errorf("Expected total 115, got %.2f", p.TotalWithVAT)
+	if p.UnitPrice != 50.00 {
+		t.Errorf("Expected unit price 50, got %.2f", p.UnitPrice)
 	}
-}
-
-func TestBuilder_Discount(t *testing.T) {
-	inv := NewBuilder().
-		WithVATPercentage(15.0).
-		AddProductWithDiscount("Product 1", 1, 100.00, 10, 0). // 10% discount
-		Build()
-
-	p := inv.Products[0]
-	// Gross: 100, Discount: 10, Net: 90, VAT: 13.5, Total: 103.5
-	if p.GrossAmount != 100 {
-		t.Errorf("Expected gross 100, got %.2f", p.GrossAmount)
+	if p.Discount != 5.0 {
+		t.Errorf("Expected discount 5.0, got %.2f", p.Discount)
 	}
-	if p.DiscountAmount != 10 {
-		t.Errorf("Expected discount 10, got %.2f", p.DiscountAmount)
+	if p.VATAmount != 14.25 {
+		t.Errorf("Expected VAT 14.25, got %.2f", p.VATAmount)
 	}
-	if p.NetAmount != 90 {
-		t.Errorf("Expected net 90, got %.2f", p.NetAmount)
-	}
-	if p.TotalWithVAT != 103.5 {
-		t.Errorf("Expected total 103.5, got %.2f", p.TotalWithVAT)
-	}
-
-	if inv.TotalDiscount != 10 {
-		t.Errorf("Expected total discount 10, got %.2f", inv.TotalDiscount)
+	if p.Total != 109.25 {
+		t.Errorf("Expected total 109.25, got %.2f", p.Total)
 	}
 }
 
@@ -191,38 +192,21 @@ func TestNewGenerator_WithFontPath(t *testing.T) {
 
 func TestBuilder_MultipleProducts(t *testing.T) {
 	inv := NewBuilder().
-		WithVATPercentage(15.0).
-		AddProduct("Product 1", 2, 50.00).  // 100
-		AddProduct("Product 2", 1, 100.00). // 100
-		AddProductWithDiscount("Product 3", 1, 80.00, 0, 10). // 70 after discount
+		AddProduct("Product 1", 2, 50.00, 0, 15.0, 115.0).
+		AddProduct("Product 2", 1, 100.00, 5.0, 14.25, 109.25).
+		AddProduct("Product 3", 1, 80.00, 10.0, 10.5, 80.5).
+		WithTotals(15.0, 215.0, 39.75, 304.75).
 		Build()
 
 	if len(inv.Products) != 3 {
 		t.Fatalf("Expected 3 products, got %d", len(inv.Products))
 	}
 
-	// Total gross: 100 + 100 + 80 = 280
-	if inv.TotalGross != 280 {
-		t.Errorf("Expected total gross 280, got %.2f", inv.TotalGross)
+	// Check totals are passed through
+	if inv.TotalDiscount != 15.0 {
+		t.Errorf("Expected total discount 15.0, got %.2f", inv.TotalDiscount)
 	}
-
-	// Total discount: 0 + 0 + 10 = 10
-	if inv.TotalDiscount != 10 {
-		t.Errorf("Expected total discount 10, got %.2f", inv.TotalDiscount)
-	}
-
-	// Total taxable (net): 100 + 100 + 70 = 270
-	if inv.TotalTaxableAmt != 270 {
-		t.Errorf("Expected total taxable 270, got %.2f", inv.TotalTaxableAmt)
-	}
-
-	// Total VAT: 270 * 0.15 = 40.5
-	if inv.TotalVAT != 40.5 {
-		t.Errorf("Expected total VAT 40.5, got %.2f", inv.TotalVAT)
-	}
-
-	// Total with VAT: 270 + 40.5 = 310.5
-	if inv.TotalWithVAT != 310.5 {
-		t.Errorf("Expected total with VAT 310.5, got %.2f", inv.TotalWithVAT)
+	if inv.TotalWithVAT != 304.75 {
+		t.Errorf("Expected total with VAT 304.75, got %.2f", inv.TotalWithVAT)
 	}
 }
