@@ -1,8 +1,8 @@
 package component
 
 import (
-	"bill-generator/arabictext"
 	"fmt"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/arabictext"
 
 	"github.com/signintech/gopdf"
 )
@@ -221,10 +221,10 @@ func drawWrappedCell(pdf *gopdf.GoPdf, text string, x, y, width, lineHeight floa
 
 // TotalsRow represents a row in the totals section.
 type TotalsRow struct {
-	Label   string
-	Value   string
-	Bold    bool
-	Thick   bool // Thicker border
+	Label string
+	Value string
+	Bold  bool
+	Thick bool // Thicker border
 }
 
 // TotalsTable displays summary totals.

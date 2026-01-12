@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"bill-generator/pkg/models"
-	"bill-generator/pkg/textutil"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/models"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/textutil"
 
 	"github.com/signintech/gopdf"
 	"github.com/skip2/go-qrcode"
@@ -211,12 +211,12 @@ func (g *Generator) drawTableHeader(tableX float64, colWidths []float64, isRTL b
 	var headers [][]string
 	if isRTL {
 		headers = [][]string{
-			{"السعر شامل", "الضريبة"},  // Total
+			{"السعر شامل", "الضريبة"},   // Total
 			{"ضريبة القيمة", "المضافة"}, // VAT
-			{"", "الخصم"},              // Discount
-			{"سعر", "الوحدة"},          // Unit Price
-			{"", "الكمية"},             // Qty
-			{"", "المنتجات"},           // Product
+			{"", "الخصم"},               // Discount
+			{"سعر", "الوحدة"},           // Unit Price
+			{"", "الكمية"},              // Qty
+			{"", "المنتجات"},            // Product
 		}
 	} else {
 		headers = [][]string{
@@ -541,4 +541,3 @@ func GenerateInvoiceBytes(invoice models.Invoice, fontDir string) ([]byte, error
 	gen := NewGenerator(fontDir)
 	return gen.GenerateBytes(invoice)
 }
-

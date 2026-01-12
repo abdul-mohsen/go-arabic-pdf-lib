@@ -1,9 +1,9 @@
 // Package invoice provides a clean API for generating PDF invoices.
-// This is the main entry point for using the bill-generator library.
+// This is the main entry point for using the github.com/abdul-mohsen/go-arabic-pdf-lib library.
 //
 // Example usage:
 //
-//	import "bill-generator/pkg/invoice"
+//	import "github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/invoice"
 //
 //	// Generate from JSON file
 //	err := invoice.GenerateFromFile("invoice.json", "output.pdf")
@@ -20,9 +20,9 @@ package invoice
 import (
 	"fmt"
 
-	"bill-generator/pkg/loader"
-	"bill-generator/pkg/models"
-	"bill-generator/pkg/pdf"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/loader"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/models"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/pdf"
 )
 
 // Invoice represents a complete invoice with all calculated values.

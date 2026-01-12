@@ -1,6 +1,6 @@
 module github.com/abdul-mohsen/go-arabic-pdf-lib
 
-go 1.21
+go 1.23
 
 require (
 	github.com/signintech/gopdf v0.34.0

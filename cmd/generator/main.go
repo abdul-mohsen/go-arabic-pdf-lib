@@ -12,15 +12,15 @@
 //
 // Example:
 //
-//	DATA_FILE=invoice_en.json ./bill-generator
+//	DATA_FILE=invoice_en.json ./github.com/abdul-mohsen/go-arabic-pdf-lib
 package main
 
 import (
 	"fmt"
 	"os"
 
-	"bill-generator/pkg/loader"
-	"bill-generator/pkg/pdf"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/loader"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/pdf"
 )
 
 func main() {
