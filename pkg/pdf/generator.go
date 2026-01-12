@@ -167,12 +167,13 @@ func (g *Generator) drawProductsTable() {
 
 	// Column widths (order depends on RTL)
 	// For RTL: Total, VAT, Price, Qty, Product (right to left visually)
-	// For LTR: Product, Qty, Price, VAT, Total (left to right visually)
+	// For RTL: Total, VAT, Discount, Price, Qty, Product (right to left visually)
+	// For LTR: Product, Qty, Price, Discount, VAT, Total (left to right visually)
 	var colWidths []float64
 	if isRTL {
-		colWidths = []float64{30, 30, 30, 20, 96}
+		colWidths = []float64{28, 28, 25, 28, 18, 79} // Total, VAT, Discount, Price, Qty, Product
 	} else {
-		colWidths = []float64{96, 20, 30, 30, 30}
+		colWidths = []float64{79, 18, 28, 25, 28, 28} // Product, Qty, Price, Discount, VAT, Total
 	}
 
 	tableWidth := 0.0
@@ -210,17 +211,19 @@ func (g *Generator) drawTableHeader(tableX float64, colWidths []float64, isRTL b
 	var headers [][]string
 	if isRTL {
 		headers = [][]string{
-			{"السعر شامل", "الضريبة"},
-			{"ضريبة القيمة", "المضافة"},
-			{"سعر", "الوحدة"},
-			{"", "الكمية"},
-			{"", "المنتجات"},
+			{"السعر شامل", "الضريبة"},  // Total
+			{"ضريبة القيمة", "المضافة"}, // VAT
+			{"", "الخصم"},              // Discount
+			{"سعر", "الوحدة"},          // Unit Price
+			{"", "الكمية"},             // Qty
+			{"", "المنتجات"},           // Product
 		}
 	} else {
 		headers = [][]string{
 			{"", "Product"},
 			{"", "Qty"},
 			{"Unit", "Price"},
+			{"", "Discount"},
 			{"VAT", "Amount"},
 			{"Total", "(inc. VAT)"},
 		}
@@ -259,9 +262,9 @@ func (g *Generator) drawTableRows(tableX float64, colWidths []float64, isRTL boo
 		// Calculate row height based on product name wrapping
 		var productColIdx int
 		if isRTL {
-			productColIdx = 4
+			productColIdx = 5 // Product column is last (index 5) in RTL
 		} else {
-			productColIdx = 0
+			productColIdx = 0 // Product column is first (index 0) in LTR
 		}
 		_, nameHeight := textutil.WrapText(&g.pdf, product.Name, colWidths[productColIdx]-6, baseRowHeight, isRTL)
 		rowHeight := nameHeight + 6
@@ -295,8 +298,8 @@ func (g *Generator) drawTableRows(tableX float64, colWidths []float64, isRTL boo
 func (g *Generator) drawRowCellsRTL(tableX float64, colWidths []float64, textY, lineHeight float64, product models.Product) {
 	xPos := tableX
 
-	// Column 0: Total with VAT
-	totalStr := fmt.Sprintf("%.1f", product.TotalWithVAT)
+	// Column 0: Total
+	totalStr := fmt.Sprintf("%.1f", product.Total)
 	tw, _ := g.pdf.MeasureTextWidth(totalStr)
 	g.pdf.SetXY(xPos+colWidths[0]-tw-3, textY)
 	g.pdf.Cell(nil, totalStr)
@@ -309,22 +312,34 @@ func (g *Generator) drawRowCellsRTL(tableX float64, colWidths []float64, textY, 
 	g.pdf.Cell(nil, vatStr)
 	xPos += colWidths[1]
 
-	// Column 2: Unit Price
-	priceStr := fmt.Sprintf("%.0f", product.UnitPrice)
-	pw, _ := g.pdf.MeasureTextWidth(priceStr)
-	g.pdf.SetXY(xPos+colWidths[2]-pw-3, textY)
-	g.pdf.Cell(nil, priceStr)
+	// Column 2: Discount
+	discStr := ""
+	if product.Discount > 0 {
+		discStr = fmt.Sprintf("%.1f", product.Discount)
+	}
+	if discStr != "" {
+		dw, _ := g.pdf.MeasureTextWidth(discStr)
+		g.pdf.SetXY(xPos+colWidths[2]-dw-3, textY)
+		g.pdf.Cell(nil, discStr)
+	}
 	xPos += colWidths[2]
 
-	// Column 3: Quantity
-	qtyStr := fmt.Sprintf("%.0f", product.Quantity)
-	qw, _ := g.pdf.MeasureTextWidth(qtyStr)
-	g.pdf.SetXY(xPos+colWidths[3]-qw-3, textY)
-	g.pdf.Cell(nil, qtyStr)
+	// Column 3: Unit Price
+	priceStr := fmt.Sprintf("%.0f", product.UnitPrice)
+	pw, _ := g.pdf.MeasureTextWidth(priceStr)
+	g.pdf.SetXY(xPos+colWidths[3]-pw-3, textY)
+	g.pdf.Cell(nil, priceStr)
 	xPos += colWidths[3]
 
-	// Column 4: Product Name
-	textutil.DrawWrappedText(&g.pdf, product.Name, xPos, textY, colWidths[4], lineHeight, true)
+	// Column 4: Quantity
+	qtyStr := fmt.Sprintf("%.0f", product.Quantity)
+	qw, _ := g.pdf.MeasureTextWidth(qtyStr)
+	g.pdf.SetXY(xPos+colWidths[4]-qw-3, textY)
+	g.pdf.Cell(nil, qtyStr)
+	xPos += colWidths[4]
+
+	// Column 5: Product Name
+	textutil.DrawWrappedText(&g.pdf, product.Name, xPos, textY, colWidths[5], lineHeight, true)
 }
 
 func (g *Generator) drawRowCellsLTR(tableX float64, colWidths []float64, textY, lineHeight float64, product models.Product) {
@@ -348,17 +363,29 @@ func (g *Generator) drawRowCellsLTR(tableX float64, colWidths []float64, textY, 
 	g.pdf.Cell(nil, priceStr)
 	xPos += colWidths[2]
 
-	// Column 3: VAT Amount
-	vatStr := fmt.Sprintf("%.1f", product.VATAmount)
-	vw, _ := g.pdf.MeasureTextWidth(vatStr)
-	g.pdf.SetXY(xPos+colWidths[3]-vw-3, textY)
-	g.pdf.Cell(nil, vatStr)
+	// Column 3: Discount
+	discStr := ""
+	if product.Discount > 0 {
+		discStr = fmt.Sprintf("%.1f", product.Discount)
+	}
+	if discStr != "" {
+		dw, _ := g.pdf.MeasureTextWidth(discStr)
+		g.pdf.SetXY(xPos+colWidths[3]-dw-3, textY)
+		g.pdf.Cell(nil, discStr)
+	}
 	xPos += colWidths[3]
 
-	// Column 4: Total with VAT
-	totalStr := fmt.Sprintf("%.1f", product.TotalWithVAT)
+	// Column 4: VAT Amount
+	vatStr := fmt.Sprintf("%.1f", product.VATAmount)
+	vw, _ := g.pdf.MeasureTextWidth(vatStr)
+	g.pdf.SetXY(xPos+colWidths[4]-vw-3, textY)
+	g.pdf.Cell(nil, vatStr)
+	xPos += colWidths[4]
+
+	// Column 5: Total
+	totalStr := fmt.Sprintf("%.1f", product.Total)
 	tw, _ := g.pdf.MeasureTextWidth(totalStr)
-	g.pdf.SetXY(xPos+colWidths[4]-tw-3, textY)
+	g.pdf.SetXY(xPos+colWidths[5]-tw-3, textY)
 	g.pdf.Cell(nil, totalStr)
 }
 
@@ -371,14 +398,37 @@ func (g *Generator) drawTotals() {
 	valueWidth := 40.0
 	labelWidth := tableWidth - valueWidth
 
-	// Row 1: Taxable Amount
 	g.pdf.SetStrokeColor(0, 0, 0)
+	g.pdf.SetFont("Amiri", "", 9)
+	g.pdf.SetTextColor(0, 0, 0)
+
+	// Row 1: Total Discount (only if there's a discount)
+	if inv.TotalDiscount > 0 {
+		g.pdf.SetLineWidth(0.5)
+		g.pdf.RectFromUpperLeftWithStyle(totalsX, g.currentY, valueWidth, 16, "D")
+		g.pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, g.currentY, labelWidth, 16, "D")
+
+		discountStr := fmt.Sprintf("%.1f", inv.TotalDiscount)
+		discountW, _ := g.pdf.MeasureTextWidth(discountStr)
+		g.pdf.SetXY(totalsX+valueWidth-discountW-3, g.currentY+3)
+		g.pdf.Cell(nil, discountStr)
+
+		discountLbl := textutil.ProcessText(inv.Labels.TotalDiscount, isRTL)
+		discountLblW, _ := g.pdf.MeasureTextWidth(discountLbl)
+
+		if isRTL {
+			g.pdf.SetXY(totalsX+valueWidth+labelWidth-discountLblW-2, g.currentY+3)
+		} else {
+			g.pdf.SetXY(totalsX+valueWidth+3, g.currentY+3)
+		}
+		g.pdf.Cell(nil, discountLbl)
+		g.currentY += 16
+	}
+
+	// Row 2: Taxable Amount
 	g.pdf.SetLineWidth(0.5)
 	g.pdf.RectFromUpperLeftWithStyle(totalsX, g.currentY, valueWidth, 16, "D")
 	g.pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, g.currentY, labelWidth, 16, "D")
-
-	g.pdf.SetFont("Amiri", "", 9)
-	g.pdf.SetTextColor(0, 0, 0)
 
 	taxableStr := fmt.Sprintf("%.0f", inv.TotalTaxableAmt)
 	taxableW, _ := g.pdf.MeasureTextWidth(taxableStr)
@@ -389,14 +439,14 @@ func (g *Generator) drawTotals() {
 	taxableLblW, _ := g.pdf.MeasureTextWidth(taxableLbl)
 
 	if isRTL {
-		g.pdf.SetXY(totalsX+valueWidth+labelWidth-taxableLblW-2, g.currentY)
+		g.pdf.SetXY(totalsX+valueWidth+labelWidth-taxableLblW-2, g.currentY+3)
 	} else {
-		g.pdf.SetXY(totalsX+valueWidth+3, g.currentY)
+		g.pdf.SetXY(totalsX+valueWidth+3, g.currentY+3)
 	}
 	g.pdf.Cell(nil, taxableLbl)
 	g.currentY += 16
 
-	// Row 2: Total with VAT
+	// Row 3: Total with VAT
 	g.pdf.SetLineWidth(1.0)
 	g.pdf.RectFromUpperLeftWithStyle(totalsX, g.currentY, valueWidth, 18, "D")
 	g.pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, g.currentY, labelWidth, 18, "D")
@@ -407,7 +457,7 @@ func (g *Generator) drawTotals() {
 
 	totalStr := fmt.Sprintf("%.0f", inv.TotalWithVAT)
 	totalStrW, _ := g.pdf.MeasureTextWidth(totalStr)
-	g.pdf.SetXY(totalsX+valueWidth-totalStrW-2, g.currentY)
+	g.pdf.SetXY(totalsX+valueWidth-totalStrW-2, g.currentY+3)
 	g.pdf.Cell(nil, totalStr)
 
 	totalLbl := textutil.ProcessText(inv.Labels.TotalWithVat, isRTL)
@@ -416,14 +466,14 @@ func (g *Generator) drawTotals() {
 	totalPctW, _ := g.pdf.MeasureTextWidth(totalPct)
 
 	if isRTL {
-		g.pdf.SetXY(totalsX+valueWidth+labelWidth-totalLblW-2, g.currentY)
+		g.pdf.SetXY(totalsX+valueWidth+labelWidth-totalLblW-2, g.currentY+3)
 		g.pdf.Cell(nil, totalLbl)
-		g.pdf.SetXY(totalsX+valueWidth+labelWidth-totalLblW-totalPctW-2, g.currentY)
+		g.pdf.SetXY(totalsX+valueWidth+labelWidth-totalLblW-totalPctW-2, g.currentY+3)
 		g.pdf.Cell(nil, totalPct)
 	} else {
-		g.pdf.SetXY(totalsX+valueWidth+3, g.currentY)
+		g.pdf.SetXY(totalsX+valueWidth+3, g.currentY+3)
 		g.pdf.Cell(nil, totalLbl)
-		g.pdf.SetXY(totalsX+valueWidth+totalLblW+6, g.currentY)
+		g.pdf.SetXY(totalsX+valueWidth+totalLblW+6, g.currentY+3)
 		g.pdf.Cell(nil, totalPct)
 	}
 

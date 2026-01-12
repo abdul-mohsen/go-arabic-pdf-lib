@@ -11,25 +11,36 @@
     "storeAddress": "عنوان المتجر",
     "date": "2021/12/12",
     "vatRegistrationNo": "123456789900003",
-    "qrCodeData": "AQpteSBjb21wYW55Ag8zMTIzNDU2Nzg5MDAwMDMDFDIwMjQtMDEtMTVUMTI6MDA6MDBaBAYyNTMuMDAFBTMzLjAw"
+    "qrCodeData": "AQpteSBjb21wYW55Ag8zMTIzNDU2Nzg5MDAwMDMDFDIwMjQtMDEtMTVUMTI6MDA6MDBaBAYyNTMuMDAFBTMzLjAw",
+    "totalDiscount": 10.0,
+    "totalTaxable": 210.0,
+    "totalVat": 31.5,
+    "totalWithVat": 241.5
   },
   "products": [
     {
-      "name": "منتج منتج منتج منتج منتج 1",
-      "quantity": 1.0,
-      "unitPrice": 50.00,
-      "discountPercent": 10
+      "name": "قهوة عربية فاخرة",
+      "quantity": 2.0,
+      "unitPrice": 25.00,
+      "discount": 5.0,
+      "vatAmount": 6.75,
+      "total": 51.75
     },
     {
-      "name": "منتج (the world is big an need a lot of help please) 2",
+      "name": "تمر سكري ممتاز",
       "quantity": 1.0,
       "unitPrice": 70.00,
-      "discountAmount": 5.00
+      "discount": 5.0,
+      "vatAmount": 9.75,
+      "total": 74.75
     },
     {
-      "name": "منتج  fasdf 23R@#$@# @#$ @#$@ 3",
+      "name": "عسل طبيعي أصلي",
       "quantity": 1.0,
-      "unitPrice": 100.00
+      "unitPrice": 100.00,
+      "discount": 0,
+      "vatAmount": 15.0,
+      "total": 115.0
     }
   ],
   "labels": {
