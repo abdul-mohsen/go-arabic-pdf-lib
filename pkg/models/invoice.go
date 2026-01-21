@@ -3,48 +3,48 @@ package models
 
 // Config holds global configuration for invoice generation.
 type Config struct {
-	VATPercentage  float64 `json:"vatPercentage"`
-	CurrencySymbol string  `json:"currencySymbol"`
-	DateFormat     string  `json:"dateFormat"`
-	English        bool    `json:"english"` // false (default) = Arabic RTL, true = English LTR
+	VATPercentage  string
+	CurrencySymbol string `json:"currencySymbol"`
+	DateFormat     string `json:"dateFormat"`
+	English        bool   `json:"english"` // false (default) = Arabic RTL, true = English LTR
 }
 
 // ProductInput represents a product from JSON input.
 // All values are pre-calculated - this library only visualizes, no calculations.
 type ProductInput struct {
-	Name      string  `json:"name"`
-	Quantity  float64 `json:"quantity"`
-	UnitPrice float64 `json:"unitPrice"`
-	Discount  float64 `json:"discount,omitempty"` // Pre-calculated discount amount
-	VATAmount float64 `json:"vatAmount"`          // Pre-calculated VAT
-	Total     float64 `json:"total"`              // Pre-calculated total (inc. VAT)
+	Name      string `json:"name"`
+	Quantity  string `json:"quantity"`
+	UnitPrice string `json:"unitPrice"`
+	Discount  string `json:"discount,omitempty"` // Pre-calculated discount amount
+	VATAmount string `json:"vatAmount"`          // Pre-calculated VAT
+	Total     string `json:"total"`              // Pre-calculated total (inc. VAT)
 }
 
 // Product represents a single product line item for rendering.
 // All values are pre-calculated and passed directly from input.
 type Product struct {
 	Name      string
-	Quantity  float64
-	UnitPrice float64
-	Discount  float64 // Pre-calculated discount amount
-	VATAmount float64 // Pre-calculated VAT
-	Total     float64 // Pre-calculated total (inc. VAT)
+	Quantity  string
+	UnitPrice string
+	Discount  string
+	VATAmount string
+	Total     string
 }
 
 // InvoiceInput represents invoice header data from JSON input.
 // All totals are pre-calculated - this library only visualizes.
 type InvoiceInput struct {
-	Title             string  `json:"title"`
-	InvoiceNumber     string  `json:"invoiceNumber"`
-	StoreName         string  `json:"storeName"`
-	StoreAddress      string  `json:"storeAddress"`
-	Date              string  `json:"date"`
-	VATRegistrationNo string  `json:"vatRegistrationNo"`
-	QRCodeData        string  `json:"qrCodeData"`
-	TotalDiscount     float64 `json:"totalDiscount,omitempty"`  // Pre-calculated total discount
-	TotalTaxable      float64 `json:"totalTaxable"`             // Pre-calculated taxable amount
-	TotalVAT          float64 `json:"totalVat"`                 // Pre-calculated total VAT
-	TotalWithVAT      float64 `json:"totalWithVat"`             // Pre-calculated grand total
+	Title             string `json:"title"`
+	InvoiceNumber     string `json:"invoiceNumber"`
+	StoreName         string `json:"storeName"`
+	StoreAddress      string `json:"storeAddress"`
+	Date              string `json:"date"`
+	VATRegistrationNo string `json:"vatRegistrationNo"`
+	QRCodeData        string `json:"qrCodeData"`
+	TotalDiscount     string
+	TotalTaxable      string
+	TotalVAT          string
+	TotalWithVAT      string
 }
 
 // Labels holds all text labels for the invoice (supports i18n).
@@ -81,13 +81,13 @@ type Invoice struct {
 	Date              string
 	VATRegistrationNo string
 	Products          []Product
-	TotalGross        float64 // Sum of all gross amounts (before discounts)
-	TotalDiscount     float64 // Sum of all discounts
-	TotalTaxableAmt   float64 // Sum of net amounts (after discounts)
-	TotalVAT          float64
-	TotalWithVAT      float64
+	TotalGross        string
+	TotalDiscount     string
+	TotalTaxableAmt   string
+	TotalVAT          string
+	TotalWithVAT      string
 	QRCodeData        string
-	VATPercentage     float64
+	VATPercentage     string
 	Labels            Labels
 	Language          string // "ar" or "en"
 	IsRTL             bool   // true for Arabic/Hebrew, false for English

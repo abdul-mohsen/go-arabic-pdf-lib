@@ -313,10 +313,7 @@ func (g *Generator) drawRowCellsRTL(tableX float64, colWidths []float64, textY, 
 	xPos += colWidths[1]
 
 	// Column 2: Discount
-	discStr := ""
-	if product.Discount > 0 {
-		discStr = fmt.Sprintf("%.1f", product.Discount)
-	}
+	discStr := product.Discount
 	if discStr != "" {
 		dw, _ := g.pdf.MeasureTextWidth(discStr)
 		g.pdf.SetXY(xPos+colWidths[2]-dw-3, textY)
@@ -364,10 +361,7 @@ func (g *Generator) drawRowCellsLTR(tableX float64, colWidths []float64, textY, 
 	xPos += colWidths[2]
 
 	// Column 3: Discount
-	discStr := ""
-	if product.Discount > 0 {
-		discStr = fmt.Sprintf("%.1f", product.Discount)
-	}
+	discStr := product.Discount
 	if discStr != "" {
 		dw, _ := g.pdf.MeasureTextWidth(discStr)
 		g.pdf.SetXY(xPos+colWidths[3]-dw-3, textY)
@@ -403,27 +397,25 @@ func (g *Generator) drawTotals() {
 	g.pdf.SetTextColor(0, 0, 0)
 
 	// Row 1: Total Discount (only if there's a discount)
-	if inv.TotalDiscount > 0 {
-		g.pdf.SetLineWidth(0.5)
-		g.pdf.RectFromUpperLeftWithStyle(totalsX, g.currentY, valueWidth, 16, "D")
-		g.pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, g.currentY, labelWidth, 16, "D")
+	g.pdf.SetLineWidth(0.5)
+	g.pdf.RectFromUpperLeftWithStyle(totalsX, g.currentY, valueWidth, 16, "D")
+	g.pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, g.currentY, labelWidth, 16, "D")
 
-		discountStr := fmt.Sprintf("%.1f", inv.TotalDiscount)
-		discountW, _ := g.pdf.MeasureTextWidth(discountStr)
-		g.pdf.SetXY(totalsX+valueWidth-discountW-3, g.currentY+3)
-		g.pdf.Cell(nil, discountStr)
+	discountStr := fmt.Sprintf("%.1f", inv.TotalDiscount)
+	discountW, _ := g.pdf.MeasureTextWidth(discountStr)
+	g.pdf.SetXY(totalsX+valueWidth-discountW-3, g.currentY+3)
+	g.pdf.Cell(nil, discountStr)
 
-		discountLbl := textutil.ProcessText(inv.Labels.TotalDiscount, isRTL)
-		discountLblW, _ := g.pdf.MeasureTextWidth(discountLbl)
+	discountLbl := textutil.ProcessText(inv.Labels.TotalDiscount, isRTL)
+	discountLblW, _ := g.pdf.MeasureTextWidth(discountLbl)
 
-		if isRTL {
-			g.pdf.SetXY(totalsX+valueWidth+labelWidth-discountLblW-2, g.currentY+3)
-		} else {
-			g.pdf.SetXY(totalsX+valueWidth+3, g.currentY+3)
-		}
-		g.pdf.Cell(nil, discountLbl)
-		g.currentY += 16
+	if isRTL {
+		g.pdf.SetXY(totalsX+valueWidth+labelWidth-discountLblW-2, g.currentY+3)
+	} else {
+		g.pdf.SetXY(totalsX+valueWidth+3, g.currentY+3)
 	}
+	g.pdf.Cell(nil, discountLbl)
+	g.currentY += 16
 
 	// Row 2: Taxable Amount
 	g.pdf.SetLineWidth(0.5)

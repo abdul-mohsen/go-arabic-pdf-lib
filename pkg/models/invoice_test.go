@@ -91,17 +91,17 @@ func TestProductInputStructure(t *testing.T) {
 	// Verify ProductInput holds JSON input values correctly
 	input := ProductInput{
 		Name:      "Widget",
-		Quantity:  3,
-		UnitPrice: 25.00,
-		Discount:  2.50,
-		VATAmount: 11.25,
-		Total:     83.75,
+		Quantity:  "3",
+		UnitPrice: "25.00",
+		Discount:  "2.50",
+		VATAmount: "11.25",
+		Total:     "83.75",
 	}
 
 	if input.Name != "Widget" {
 		t.Errorf("Expected name 'Widget', got '%s'", input.Name)
 	}
-	if input.Discount != 2.50 {
+	if input.Discount != "2.50" {
 		t.Errorf("Expected discount 2.50, got %.2f", input.Discount)
 	}
 }
