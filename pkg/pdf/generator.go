@@ -312,8 +312,6 @@ func (g *Generator) drawRowCellsRTL(tableX float64, colWidths []float64, textY, 
 	g.pdf.Cell(nil, vatStr)
 	xPos += colWidths[1]
 
-	xPos += colWidths[2]
-
 	// Column 3: Unit Price
 	priceStr := product.UnitPrice
 	pw, _ := g.pdf.MeasureTextWidth(priceStr)
