@@ -171,9 +171,9 @@ func (g *Generator) drawProductsTable() {
 	// For LTR: Product, Qty, Price, Discount, VAT, Total (left to right visually)
 	var colWidths []float64
 	if isRTL {
-		colWidths = []float64{32, 32, 32, 16, 79} // Total, VAT, Discount, Price, Qty, Product
+		colWidths = []float64{32, 32, 32, 16, 80} // Total, VAT, Discount, Price, Qty, Product
 	} else {
-		colWidths = []float64{79, 16, 32, 32, 32} // Product, Qty, Price, Discount, VAT, Total
+		colWidths = []float64{80, 16, 32, 32, 32} // Product, Qty, Price, Discount, VAT, Total
 	}
 
 	tableWidth := 0.0
@@ -315,16 +315,16 @@ func (g *Generator) drawRowCellsRTL(tableX float64, colWidths []float64, textY, 
 	// Column 3: Unit Price
 	priceStr := product.UnitPrice
 	pw, _ := g.pdf.MeasureTextWidth(priceStr)
-	g.pdf.SetXY(xPos+colWidths[3]-pw, textY)
+	g.pdf.SetXY(xPos+colWidths[2]-pw, textY)
 	g.pdf.Cell(nil, priceStr)
-	xPos += colWidths[3]
+	xPos += colWidths[2]
 
 	// Column 4: Quantity
 	qtyStr := product.Quantity
 	qw, _ := g.pdf.MeasureTextWidth(qtyStr)
-	g.pdf.SetXY(xPos+colWidths[4]-qw, textY)
+	g.pdf.SetXY(xPos+colWidths[3]-qw, textY)
 	g.pdf.Cell(nil, qtyStr)
-	xPos += colWidths[4]
+	xPos += colWidths[3]
 
 	// Column 5: Product Name
 	textutil.DrawWrappedText(&g.pdf, product.Name, xPos, textY, colWidths[4], lineHeight, true)
