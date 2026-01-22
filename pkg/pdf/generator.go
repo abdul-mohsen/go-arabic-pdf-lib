@@ -171,9 +171,9 @@ func (g *Generator) drawProductsTable() {
 	// For LTR: Product, Qty, Price, Discount, VAT, Total (left to right visually)
 	var colWidths []float64
 	if isRTL {
-		colWidths = []float64{28, 28, 25, 28, 18, 79} // Total, VAT, Discount, Price, Qty, Product
+		colWidths = []float64{32, 32, 32, 16, 79} // Total, VAT, Discount, Price, Qty, Product
 	} else {
-		colWidths = []float64{79, 18, 28, 25, 28, 28} // Product, Qty, Price, Discount, VAT, Total
+		colWidths = []float64{79, 16, 32, 32, 32} // Product, Qty, Price, Discount, VAT, Total
 	}
 
 	tableWidth := 0.0
@@ -213,17 +213,17 @@ func (g *Generator) drawTableHeader(tableX float64, colWidths []float64, isRTL b
 		headers = [][]string{
 			{"السعر شامل", "الضريبة"},   // Total
 			{"ضريبة القيمة", "المضافة"}, // VAT
-			{"", "الخصم"},               // Discount
-			{"سعر", "الوحدة"},           // Unit Price
-			{"", "الكمية"},              // Qty
-			{"", "المنتجات"},            // Product
+			// {"", "الخصم"},               // Discount
+			{"سعر", "الوحدة"}, // Unit Price
+			{"", "الكمية"},    // Qty
+			{"", "المنتجات"},  // Product
 		}
 	} else {
 		headers = [][]string{
 			{"", "Product"},
 			{"", "Qty"},
 			{"Unit", "Price"},
-			{"", "Discount"},
+			// {"", "Discount"},
 			{"VAT", "Amount"},
 			{"Total", "(inc. VAT)"},
 		}
@@ -317,14 +317,14 @@ func (g *Generator) drawRowCellsRTL(tableX float64, colWidths []float64, textY, 
 	// Column 3: Unit Price
 	priceStr := product.UnitPrice
 	pw, _ := g.pdf.MeasureTextWidth(priceStr)
-	g.pdf.SetXY(xPos+colWidths[3]-pw-3, textY)
+	g.pdf.SetXY(xPos+colWidths[3]-pw, textY)
 	g.pdf.Cell(nil, priceStr)
 	xPos += colWidths[3]
 
 	// Column 4: Quantity
 	qtyStr := product.Quantity
 	qw, _ := g.pdf.MeasureTextWidth(qtyStr)
-	g.pdf.SetXY(xPos+colWidths[4]-qw-3, textY)
+	g.pdf.SetXY(xPos+colWidths[4]-qw, textY)
 	g.pdf.Cell(nil, qtyStr)
 	xPos += colWidths[4]
 
