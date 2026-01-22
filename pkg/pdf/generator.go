@@ -262,7 +262,7 @@ func (g *Generator) drawTableRows(tableX float64, colWidths []float64, isRTL boo
 		// Calculate row height based on product name wrapping
 		var productColIdx int
 		if isRTL {
-			productColIdx = 5 // Product column is last (index 5) in RTL
+			productColIdx = 4 // Product column is last (index 5) in RTL
 		} else {
 			productColIdx = 0 // Product column is first (index 0) in LTR
 		}
