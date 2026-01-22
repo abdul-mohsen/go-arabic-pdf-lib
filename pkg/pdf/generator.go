@@ -171,9 +171,9 @@ func (g *Generator) drawProductsTable() {
 	// For LTR: Product, Qty, Price, Discount, VAT, Total (left to right visually)
 	var colWidths []float64
 	if isRTL {
-		colWidths = []float64{32, 32, 32, 16, 80} // Total, VAT, Discount, Price, Qty, Product
+		colWidths = []float64{32, 32, 32, 16, 94} // Total, VAT, Discount, Price, Qty, Product
 	} else {
-		colWidths = []float64{80, 16, 32, 32, 32} // Product, Qty, Price, Discount, VAT, Total
+		colWidths = []float64{94, 16, 32, 32, 32} // Product, Qty, Price, Discount, VAT, Total
 	}
 
 	tableWidth := 0.0
