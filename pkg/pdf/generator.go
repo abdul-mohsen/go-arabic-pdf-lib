@@ -356,7 +356,7 @@ func (g *Generator) drawRowCellsLTR(tableX float64, colWidths []float64, textY, 
 	// Column 2: Unit Price
 	priceStr := product.UnitPrice
 	pw, _ := g.pdf.MeasureTextWidth(priceStr)
-	g.pdf.SetXY(xPos+colWidths[2]-pw-3, textY)
+	g.pdf.SetXY(xPos+colWidths[2]-pw, textY)
 	g.pdf.Cell(nil, priceStr)
 	xPos += colWidths[2]
 
@@ -422,7 +422,7 @@ func (g *Generator) drawTotals() {
 	g.pdf.RectFromUpperLeftWithStyle(totalsX, g.currentY, valueWidth, 16, "D")
 	g.pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, g.currentY, labelWidth, 16, "D")
 
-	taxableStr := fmt.Sprintf("%.0f", inv.TotalTaxableAmt)
+	taxableStr := inv.TotalTaxableAmt
 	taxableW, _ := g.pdf.MeasureTextWidth(taxableStr)
 	g.pdf.SetXY(totalsX+valueWidth-taxableW-3, g.currentY+3)
 	g.pdf.Cell(nil, taxableStr)
@@ -447,13 +447,13 @@ func (g *Generator) drawTotals() {
 		g.pdf.SetFont("Amiri", "", 10)
 	}
 
-	totalStr := fmt.Sprintf("%.0f", inv.TotalWithVAT)
+	totalStr := inv.TotalWithVAT
 	totalStrW, _ := g.pdf.MeasureTextWidth(totalStr)
 	g.pdf.SetXY(totalsX+valueWidth-totalStrW-2, g.currentY+3)
 	g.pdf.Cell(nil, totalStr)
 
 	totalLbl := textutil.ProcessText(inv.Labels.TotalWithVat, isRTL)
-	totalPct := fmt.Sprintf("(%.0f%%)", inv.VATPercentage)
+	totalPct := fmt.Sprintf("(%s%%)", inv.VATPercentage)
 	totalLblW, _ := g.pdf.MeasureTextWidth(totalLbl)
 	totalPctW, _ := g.pdf.MeasureTextWidth(totalPct)
 
