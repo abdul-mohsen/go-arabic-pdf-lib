@@ -312,13 +312,6 @@ func (g *Generator) drawRowCellsRTL(tableX float64, colWidths []float64, textY, 
 	g.pdf.Cell(nil, vatStr)
 	xPos += colWidths[1]
 
-	// Column 2: Discount
-	discStr := product.Discount
-	if discStr != "" {
-		dw, _ := g.pdf.MeasureTextWidth(discStr)
-		g.pdf.SetXY(xPos+colWidths[2]-dw-3, textY)
-		g.pdf.Cell(nil, discStr)
-	}
 	xPos += colWidths[2]
 
 	// Column 3: Unit Price
@@ -360,15 +353,6 @@ func (g *Generator) drawRowCellsLTR(tableX float64, colWidths []float64, textY, 
 	g.pdf.Cell(nil, priceStr)
 	xPos += colWidths[2]
 
-	// Column 3: Discount
-	discStr := product.Discount
-	if discStr != "" {
-		dw, _ := g.pdf.MeasureTextWidth(discStr)
-		g.pdf.SetXY(xPos+colWidths[3]-dw-3, textY)
-		g.pdf.Cell(nil, discStr)
-	}
-	xPos += colWidths[3]
-
 	// Column 4: VAT Amount
 	vatStr := product.VATAmount
 	vw, _ := g.pdf.MeasureTextWidth(vatStr)
@@ -403,16 +387,16 @@ func (g *Generator) drawTotals() {
 
 	discountStr := inv.TotalDiscount
 	discountW, _ := g.pdf.MeasureTextWidth(discountStr)
-	g.pdf.SetXY(totalsX+valueWidth-discountW-3, g.currentY+3)
+	g.pdf.SetXY(totalsX+valueWidth-discountW-3, g.currentY)
 	g.pdf.Cell(nil, discountStr)
 
 	discountLbl := textutil.ProcessText(inv.Labels.TotalDiscount, isRTL)
 	discountLblW, _ := g.pdf.MeasureTextWidth(discountLbl)
 
 	if isRTL {
-		g.pdf.SetXY(totalsX+valueWidth+labelWidth-discountLblW-2, g.currentY+3)
+		g.pdf.SetXY(totalsX+valueWidth+labelWidth-discountLblW-2, g.currentY)
 	} else {
-		g.pdf.SetXY(totalsX+valueWidth+3, g.currentY+3)
+		g.pdf.SetXY(totalsX+valueWidth+3, g.currentY)
 	}
 	g.pdf.Cell(nil, discountLbl)
 	g.currentY += 16
