@@ -329,7 +329,7 @@ func (g *Generator) drawRowCellsRTL(tableX float64, colWidths []float64, textY, 
 	xPos += colWidths[4]
 
 	// Column 5: Product Name
-	textutil.DrawWrappedText(&g.pdf, product.Name, xPos, textY, colWidths[5], lineHeight, true)
+	textutil.DrawWrappedText(&g.pdf, product.Name, xPos, textY, colWidths[4], lineHeight, true)
 }
 
 func (g *Generator) drawRowCellsLTR(tableX float64, colWidths []float64, textY, lineHeight float64, product models.Product) {
@@ -363,7 +363,7 @@ func (g *Generator) drawRowCellsLTR(tableX float64, colWidths []float64, textY, 
 	// Column 5: Total
 	totalStr := product.Total
 	tw, _ := g.pdf.MeasureTextWidth(totalStr)
-	g.pdf.SetXY(xPos+colWidths[5]-tw-3, textY)
+	g.pdf.SetXY(xPos+colWidths[4]-tw-3, textY)
 	g.pdf.Cell(nil, totalStr)
 }
 
