@@ -49,19 +49,20 @@ type InvoiceInput struct {
 
 // Labels holds all text labels for the invoice (supports i18n).
 type Labels struct {
-	InvoiceNumber   string `json:"invoiceNumber"`
-	Date            string `json:"date"`
-	VATRegistration string `json:"vatRegistration"`
-	TotalTaxable    string `json:"totalTaxable"`
-	TotalWithVat    string `json:"totalWithVat"`
-	ProductColumn   string `json:"productColumn"`
-	QuantityColumn  string `json:"quantityColumn"`
-	UnitPriceColumn string `json:"unitPriceColumn"`
-	DiscountColumn  string `json:"discountColumn,omitempty"`
-	VATAmountColumn string `json:"vatAmountColumn"`
-	TotalColumn     string `json:"totalColumn"`
-	TotalDiscount   string `json:"totalDiscount,omitempty"`
-	Footer          string `json:"footer"`
+	InvoiceNumber                string `json:"invoiceNumber"`
+	Date                         string `json:"date"`
+	VATRegistration              string `json:"vatRegistration"`
+	CommercialRegistrationNumber string `json:"commercialRegistrationNumber"`
+	TotalTaxable                 string `json:"totalTaxable"`
+	TotalWithVat                 string `json:"totalWithVat"`
+	ProductColumn                string `json:"productColumn"`
+	QuantityColumn               string `json:"quantityColumn"`
+	UnitPriceColumn              string `json:"unitPriceColumn"`
+	DiscountColumn               string `json:"discountColumn,omitempty"`
+	VATAmountColumn              string `json:"vatAmountColumn"`
+	TotalColumn                  string `json:"totalColumn"`
+	TotalDiscount                string `json:"totalDiscount,omitempty"`
+	Footer                       string `json:"footer"`
 }
 
 // InvoiceData represents the complete JSON input structure.
@@ -74,21 +75,22 @@ type InvoiceData struct {
 
 // Invoice represents a fully processed invoice ready for PDF generation.
 type Invoice struct {
-	Title             string
-	InvoiceNumber     string
-	StoreName         string
-	StoreAddress      string
-	Date              string
-	VATRegistrationNo string
-	Products          []Product
-	TotalGross        string
-	TotalDiscount     string
-	TotalTaxableAmt   string
-	TotalVAT          string
-	TotalWithVAT      string
-	QRCodeData        string
-	VATPercentage     string
-	Labels            Labels
-	Language          string // "ar" or "en"
-	IsRTL             bool   // true for Arabic/Hebrew, false for English
+	Title                        string
+	InvoiceNumber                string
+	StoreName                    string
+	StoreAddress                 string
+	Date                         string
+	VATRegistrationNo            string
+	CommercialRegistrationNumber string
+	Products                     []Product
+	TotalGross                   string
+	TotalDiscount                string
+	TotalTaxableAmt              string
+	TotalVAT                     string
+	TotalWithVAT                 string
+	QRCodeData                   string
+	VATPercentage                string
+	Labels                       Labels
+	Language                     string // "ar" or "en"
+	IsRTL                        bool   // true for Arabic/Hebrew, false for English
 }

@@ -159,6 +159,24 @@ func (g *Generator) drawInvoiceInfo() {
 		g.pdf.Cell(nil, inv.VATRegistrationNo)
 	}
 	g.currentY += 14
+	// VAT Registration
+	g.pdf.SetFont("Amiri", "", 8)
+	crnLabel := textutil.ProcessText(inv.Labels.VATRegistration, isRTL)
+	crnLabelW, _ := g.pdf.MeasureTextWidth(crnLabel)
+
+	if isRTL {
+		g.pdf.SetXY(g.margin+g.contentW-crnLabelW, g.currentY)
+		g.pdf.Cell(nil, crnLabel)
+		g.pdf.SetXY(g.margin, g.currentY)
+		g.pdf.Cell(nil, inv.CommercialRegistrationNumber)
+	} else {
+		g.pdf.SetXY(g.margin, g.currentY)
+		g.pdf.Cell(nil, crnLabel)
+		vatNoW, _ := g.pdf.MeasureTextWidth(inv.VATRegistrationNo)
+		g.pdf.SetXY(g.margin+g.contentW-vatNoW, g.currentY)
+		g.pdf.Cell(nil, inv.CommercialRegistrationNumber)
+	}
+	g.currentY += 14
 }
 
 func (g *Generator) drawProductsTable() {
