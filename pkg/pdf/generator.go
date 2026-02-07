@@ -159,9 +159,9 @@ func (g *Generator) drawInvoiceInfo() {
 		g.pdf.Cell(nil, inv.VATRegistrationNo)
 	}
 	g.currentY += 14
-	// VAT Registration
+	// Company Registration number
 	g.pdf.SetFont("Amiri", "", 8)
-	crnLabel := textutil.ProcessText(inv.Labels.VATRegistration, isRTL)
+	crnLabel := textutil.ProcessText(inv.Labels.CommercialRegistrationNumber, isRTL)
 	crnLabelW, _ := g.pdf.MeasureTextWidth(crnLabel)
 
 	if isRTL {
@@ -172,7 +172,7 @@ func (g *Generator) drawInvoiceInfo() {
 	} else {
 		g.pdf.SetXY(g.margin, g.currentY)
 		g.pdf.Cell(nil, crnLabel)
-		vatNoW, _ := g.pdf.MeasureTextWidth(inv.VATRegistrationNo)
+		vatNoW, _ := g.pdf.MeasureTextWidth(inv.CommercialRegistrationNumber)
 		g.pdf.SetXY(g.margin+g.contentW-vatNoW, g.currentY)
 		g.pdf.Cell(nil, inv.CommercialRegistrationNumber)
 	}
