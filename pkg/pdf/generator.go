@@ -438,6 +438,27 @@ func (g *Generator) drawTotals() {
 	g.pdf.Cell(nil, taxableLbl)
 	g.currentY += 16
 
+	// Row 3: VAT Amount
+	g.pdf.SetLineWidth(0.5)
+	g.pdf.RectFromUpperLeftWithStyle(totalsX, g.currentY, valueWidth, 16, "D")
+	g.pdf.RectFromUpperLeftWithStyle(totalsX+valueWidth, g.currentY, labelWidth, 16, "D")
+
+	vatStr := inv.TotalVAT
+	vatW, _ := g.pdf.MeasureTextWidth(vatStr)
+	g.pdf.SetXY(totalsX+valueWidth-vatW-3, g.currentY+3)
+	g.pdf.Cell(nil, vatStr)
+
+	vatLbl := textutil.ProcessText(inv.Labels.Vat, isRTL)
+	vatLblW, _ := g.pdf.MeasureTextWidth(vatLbl)
+
+	if isRTL {
+		g.pdf.SetXY(totalsX+valueWidth+labelWidth-vatLblW-2, g.currentY+3)
+	} else {
+		g.pdf.SetXY(totalsX+valueWidth+3, g.currentY+3)
+	}
+	g.pdf.Cell(nil, vatLbl)
+	g.currentY += 16
+
 	// Row 3: Total with VAT
 	g.pdf.SetLineWidth(1.0)
 	g.pdf.RectFromUpperLeftWithStyle(totalsX, g.currentY, valueWidth, 18, "D")

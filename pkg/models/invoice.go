@@ -54,6 +54,7 @@ type Labels struct {
 	VATRegistration              string `json:"vatRegistration"`
 	CommercialRegistrationNumber string `json:"commercialRegistrationNumber"`
 	TotalTaxable                 string `json:"totalTaxable"`
+	Vat                          string `json:"vat"`
 	TotalWithVat                 string `json:"totalWithVat"`
 	ProductColumn                string `json:"productColumn"`
 	QuantityColumn               string `json:"quantityColumn"`
