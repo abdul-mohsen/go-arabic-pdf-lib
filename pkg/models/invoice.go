@@ -64,6 +64,7 @@ type Labels struct {
 	TotalColumn                  string `json:"totalColumn"`
 	TotalDiscount                string `json:"totalDiscount,omitempty"`
 	Footer                       string `json:"footer"`
+	Reason                       string `json:"reason"`
 }
 
 // InvoiceData represents the complete JSON input structure.
@@ -77,6 +78,7 @@ type InvoiceData struct {
 // Invoice represents a fully processed invoice ready for PDF generation.
 type Invoice struct {
 	Title                        string
+	CreditNote                   *string
 	InvoiceNumber                string
 	StoreName                    string
 	StoreAddress                 string

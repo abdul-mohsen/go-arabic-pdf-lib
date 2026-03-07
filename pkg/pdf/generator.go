@@ -177,6 +177,29 @@ func (g *Generator) drawInvoiceInfo() {
 		g.pdf.Cell(nil, inv.CommercialRegistrationNumber)
 	}
 	g.currentY += 14
+
+	if inv.CreditNote == nil {
+		return
+	}
+	// Credit Note Reason
+
+	g.pdf.SetFont("Amiri", "", 8)
+	reasonLabel := textutil.ProcessText(inv.Labels.Reason, isRTL)
+	reasonLabelW, _ := g.pdf.MeasureTextWidth(reasonLabel)
+
+	if isRTL {
+		g.pdf.SetXY(g.margin+g.contentW-reasonLabelW, g.currentY)
+		g.pdf.Cell(nil, reasonLabel)
+		g.pdf.SetXY(g.margin, g.currentY)
+		g.pdf.Cell(nil, *inv.CreditNote)
+	} else {
+		g.pdf.SetXY(g.margin, g.currentY)
+		g.pdf.Cell(nil, reasonLabel)
+		vatNoW, _ := g.pdf.MeasureTextWidth(*inv.CreditNote)
+		g.pdf.SetXY(g.margin+g.contentW-vatNoW, g.currentY)
+		g.pdf.Cell(nil, *inv.CreditNote)
+	}
+	g.currentY += 14
 }
 
 func (g *Generator) drawProductsTable() {
