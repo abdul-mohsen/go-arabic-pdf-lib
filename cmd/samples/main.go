@@ -128,7 +128,7 @@ func b2cInvoice(arabic bool, paper models.PaperSize) models.Invoice {
 		WithTitle(title(arabic, "Simplified Tax Invoice", "فاتورة ضريبية مبسطة")).
 		WithInvoiceNumber("INV-2026-0042").
 		WithSeller(seller(arabic)).
-		WithVATPercentage(15).
+		WithVATPercentage("15.0").
 		WithQRCode("AQlhbHBoYSBjbwIKMzAwMDAwMDAwMw==")
 
 	b.AddProduct(productName(arabic, "Laptop Dell XPS 15", "لابتوب ديل XPS 15"), 1, 4500.00, 200.00, 645.00, 4945.00)

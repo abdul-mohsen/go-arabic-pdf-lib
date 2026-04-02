@@ -26,10 +26,12 @@ func DrawTotals(ctx *DrawContext) {
 	pdf.SetTextColor(0, 0, 0)
 
 	// Row: Total Discount (only if > 0)
-	if inv.TotalDiscount > 0 {
-		drawTotalsRow(ctx, totalsX, valueWidth, labelWidth, l.TotalsRowH,
-			inv.Labels.TotalDiscount, fmt.Sprintf("%.2f", inv.TotalDiscount), isRTL, false)
-	}
+	// if inv.TotalDiscount > 0 {
+	// 	drawTotalsRow(ctx, totalsX, valueWidth, labelWidth, l.TotalsRowH,
+	// 		inv.Labels.TotalDiscount, fmt.Sprintf("%.2f", inv.TotalDiscount), isRTL, false)
+	// }
+	drawTotalsRow(ctx, totalsX, valueWidth, labelWidth, l.TotalsRowH,
+		inv.Labels.TotalDiscount, fmt.Sprintf("%.2f", inv.TotalDiscount), isRTL, false)
 
 	// Row: Taxable Amount
 	drawTotalsRow(ctx, totalsX, valueWidth, labelWidth, l.TotalsRowH,

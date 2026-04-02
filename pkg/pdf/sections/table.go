@@ -243,9 +243,9 @@ func drawRowCellsLTR(ctx *DrawContext, tableX float64, colWidths []float64, text
 	col++
 
 	// Discount
-	if product.Discount > 0 {
-		drawCellNumberSized(pdf, fmt.Sprintf("%.2f", product.Discount), xPos, colWidths[col], textY, false, fs)
-	}
+	// if product.Discount > 0 {
+	// }
+	drawCellNumberSized(pdf, fmt.Sprintf("%.2f", product.Discount), xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 
@@ -289,9 +289,10 @@ func drawRowCellsRTL(ctx *DrawContext, tableX float64, colWidths []float64, text
 	}
 
 	// Discount
-	if product.Discount > 0 {
-		drawCellNumberSized(pdf, fmt.Sprintf("%.2f", product.Discount), xPos, colWidths[col], textY, false, fs)
-	}
+	// if product.Discount > 0 {
+	// 	drawCellNumberSized(pdf, fmt.Sprintf("%.2f", product.Discount), xPos, colWidths[col], textY, false, fs)
+	// }
+	drawCellNumberSized(pdf, fmt.Sprintf("%.2f", product.Discount), xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 

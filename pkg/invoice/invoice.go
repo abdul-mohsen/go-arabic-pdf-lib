@@ -147,7 +147,7 @@ func NewBuilder() *Builder {
 		inv: models.Invoice{
 			Type:          models.InvoiceTypeB2C,
 			PaperSize:     models.PaperThermal,
-			VATPercentage: 15.0,
+			VATPercentage: "15.0",
 			Date:          time.Now(),
 			DateFormat:    "2006-01-02 15:04:05",
 			Language:      "ar",
@@ -163,7 +163,7 @@ func (b *Builder) WithInvoiceNumber(n string) *Builder    { b.inv.InvoiceNumber 
 func (b *Builder) WithDate(date time.Time) *Builder       { b.inv.Date = date; return b }
 func (b *Builder) WithDateFormat(f string) *Builder       { b.inv.DateFormat = f; return b }
 func (b *Builder) WithQRCode(data string) *Builder        { b.inv.QRCodeData = data; return b }
-func (b *Builder) WithVATPercentage(p float64) *Builder   { b.inv.VATPercentage = p; return b }
+func (b *Builder) WithVATPercentage(p string) *Builder    { b.inv.VATPercentage = p; return b }
 func (b *Builder) WithNoteReason(reason string) *Builder  { b.inv.NoteReason = reason; return b }
 func (b *Builder) WithLabels(labels Labels) *Builder      { b.inv.Labels = labels; return b }
 
@@ -208,7 +208,7 @@ func (b *Builder) WithArabic() *Builder {
 }
 
 // AddProduct adds a product to the invoice with pre-calculated values.
-func (b *Builder) AddProduct(name string, quantity, unitPrice, discount, vatAmount, total float64) *Builder {
+func (b *Builder) AddProduct(name, quantity, unitPrice, discount, vatAmount, total string) *Builder {
 	b.inv.Products = append(b.inv.Products, models.Product{
 		Name:      name,
 		Quantity:  quantity,
@@ -221,7 +221,7 @@ func (b *Builder) AddProduct(name string, quantity, unitPrice, discount, vatAmou
 }
 
 // WithTotals sets the pre-calculated totals for the invoice.
-func (b *Builder) WithTotals(totalDiscount, totalTaxable, totalVAT, totalWithVAT float64) *Builder {
+func (b *Builder) WithTotals(totalDiscount, totalTaxable, totalVAT, totalWithVAT string) *Builder {
 	b.inv.TotalDiscount = totalDiscount
 	b.inv.TotalTaxableAmt = totalTaxable
 	b.inv.TotalVAT = totalVAT
