@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/ssda/bill-generator/pkg/models"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/models"
 )
 
 // LoadFromJSON reads a JSON file and returns an Invoice for visualization.

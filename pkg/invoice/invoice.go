@@ -17,9 +17,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/ssda/bill-generator/pkg/loader"
-	"github.com/ssda/bill-generator/pkg/models"
-	"github.com/ssda/bill-generator/pkg/pdf"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/loader"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/models"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/pdf"
 )
 
 // Type aliases for convenience.

@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  bill-generator:
+  go-arabic-pdf-lib:
     build:
       context: .
       dockerfile: Dockerfile

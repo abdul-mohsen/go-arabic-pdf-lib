@@ -2,8 +2,8 @@
 package sections
 
 import (
-	"github.com/ssda/bill-generator/pkg/models"
-	"github.com/ssda/bill-generator/pkg/textutil"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/models"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/textutil"
 
 	"github.com/signintech/gopdf"
 )

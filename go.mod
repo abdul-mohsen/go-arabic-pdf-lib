@@ -1,4 +1,4 @@
-module github.com/ssda/bill-generator
+module github.com/abdul-mohsen/go-arabic-pdf-lib
 
 go 1.25.0
 

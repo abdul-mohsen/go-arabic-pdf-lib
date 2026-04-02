@@ -19,8 +19,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/ssda/bill-generator/pkg/loader"
-	"github.com/ssda/bill-generator/pkg/pdf"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/loader"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/pdf"
 )
 
 func main() {

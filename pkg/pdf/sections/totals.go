@@ -3,7 +3,7 @@ package sections
 import (
 	"fmt"
 
-	"github.com/ssda/bill-generator/pkg/textutil"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/textutil"
 )
 
 // DrawTotals draws the totals section (discount, taxable, VAT, grand total).

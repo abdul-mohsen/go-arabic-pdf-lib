@@ -1,6 +1,6 @@
 package sections
 
-import "github.com/ssda/bill-generator/pkg/textutil"
+import "github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/textutil"
 
 // DrawCreditDebitReason draws the reason for a credit or debit note.
 func DrawCreditDebitReason(ctx *DrawContext) {

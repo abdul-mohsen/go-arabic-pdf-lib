@@ -1,7 +1,7 @@
 // Package pdf provides PDF generation for invoices.
 package pdf
 
-import "github.com/ssda/bill-generator/pkg/models"
+import "github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/models"
 
 // Layout holds all dimensions and font sizes for a given paper size.
 type Layout struct {

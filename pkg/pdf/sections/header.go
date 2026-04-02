@@ -1,6 +1,6 @@
 package sections
 
-import "github.com/ssda/bill-generator/pkg/textutil"
+import "github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/textutil"
 
 // DrawHeader draws the invoice title centered.
 func DrawHeader(ctx *DrawContext) {

@@ -1,6 +1,6 @@
 package sections
 
-import "github.com/ssda/bill-generator/pkg/textutil"
+import "github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/textutil"
 
 // DrawFooter draws the footer text centered (with wrapping).
 func DrawFooter(ctx *DrawContext) {

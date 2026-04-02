@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/ssda/bill-generator/pkg/invoice"
-	"github.com/ssda/bill-generator/pkg/models"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/invoice"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/models"
 )
 
 func main() {
@@ -154,17 +154,17 @@ func b2bInvoice(arabic bool) models.Invoice {
 	inv := b.Build()
 	inv.Products = []models.Product{
 		{
-			Name: productName(arabic, "Enterprise Server Rack", "خادم مؤسسي"),
+			Name:     productName(arabic, "Enterprise Server Rack", "خادم مؤسسي"),
 			Quantity: 2, UnitPrice: 12000.00, Discount: 1000.00,
 			SubtotalExclVAT: 23000.00, VATAmount: 3450.00, Total: 26450.00,
 		},
 		{
-			Name: productName(arabic, "Annual Support Contract", "عقد دعم سنوي"),
+			Name:     productName(arabic, "Annual Support Contract", "عقد دعم سنوي"),
 			Quantity: 1, UnitPrice: 8000.00, Discount: 500.00,
 			SubtotalExclVAT: 7500.00, VATAmount: 1125.00, Total: 8625.00,
 		},
 		{
-			Name: productName(arabic, "Network Switch 48-Port", "سويتش شبكة 48 منفذ"),
+			Name:     productName(arabic, "Network Switch 48-Port", "سويتش شبكة 48 منفذ"),
 			Quantity: 4, UnitPrice: 1500.00, Discount: 0,
 			SubtotalExclVAT: 6000.00, VATAmount: 900.00, Total: 6900.00,
 		},
@@ -193,7 +193,7 @@ func creditNote(arabic bool, invType models.InvoiceType) models.Invoice {
 		inv := b.Build()
 		inv.Products = []models.Product{
 			{
-				Name: productName(arabic, "Enterprise Server Rack", "خادم مؤسسي"),
+				Name:     productName(arabic, "Enterprise Server Rack", "خادم مؤسسي"),
 				Quantity: 1, UnitPrice: 12000.00, Discount: 500.00,
 				SubtotalExclVAT: 11500.00, VATAmount: 1725.00, Total: 13225.00,
 			},
@@ -227,7 +227,7 @@ func debitNote(arabic bool, invType models.InvoiceType) models.Invoice {
 		inv := b.Build()
 		inv.Products = []models.Product{
 			{
-				Name: productName(arabic, "Shipping Surcharge", "رسوم شحن إضافية"),
+				Name:     productName(arabic, "Shipping Surcharge", "رسوم شحن إضافية"),
 				Quantity: 1, UnitPrice: 500.00, Discount: 0,
 				SubtotalExclVAT: 500.00, VATAmount: 75.00, Total: 575.00,
 			},

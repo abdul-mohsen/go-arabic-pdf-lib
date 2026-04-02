@@ -4,8 +4,8 @@ package pdf
 import (
 	"fmt"
 
-	"github.com/ssda/bill-generator/pkg/models"
-	"github.com/ssda/bill-generator/pkg/pdf/sections"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/models"
+	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/pdf/sections"
 
 	"github.com/signintech/gopdf"
 )
