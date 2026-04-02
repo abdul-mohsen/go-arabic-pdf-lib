@@ -1,7 +1,7 @@
 package component
 
 import (
-	"github.com/abdul-mohsen/go-arabic-pdf-lib/arabictext"
+	"github.com/ssda/bill-generator/arabictext"
 
 	"github.com/signintech/gopdf"
 )

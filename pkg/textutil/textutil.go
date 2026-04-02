@@ -2,7 +2,7 @@
 package textutil
 
 import (
-	"github.com/abdul-mohsen/go-arabic-pdf-lib/arabictext"
+	"github.com/ssda/bill-generator/arabictext"
 
 	"github.com/signintech/gopdf"
 )
@@ -66,6 +66,23 @@ func DrawTextCentered(pdf *gopdf.GoPdf, text string, x, y, width float64, isRTL 
 	centerX := x + (width-textWidth)/2
 	pdf.SetXY(centerX, y)
 	pdf.Cell(nil, processedText)
+}
+
+// DrawTextCenteredWrapped draws text centered, wrapping to multiple lines if needed.
+// Returns the total height consumed.
+func DrawTextCenteredWrapped(pdf *gopdf.GoPdf, text string, x, y, width, lineHeight float64, isRTL bool) float64 {
+	lines, _ := WrapText(pdf, text, width-8, lineHeight, isRTL)
+	for i, line := range lines {
+		tw, _ := pdf.MeasureTextWidth(line)
+		cx := x + (width-tw)/2
+		pdf.SetXY(cx, y+float64(i)*lineHeight)
+		pdf.Cell(nil, line)
+	}
+	h := float64(len(lines)) * lineHeight
+	if h < lineHeight {
+		h = lineHeight
+	}
+	return h
 }
 
 // DrawTextRight draws text right-aligned within a given width.

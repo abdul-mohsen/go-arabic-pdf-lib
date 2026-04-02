@@ -18,7 +18,7 @@ A Go library for generating PDF invoices with full Arabic RTL support, English L
 ## Installation
 
 ```bash
-go get github.com/abdul-mohsen/github.com/abdul-mohsen/go-arabic-pdf-lib
+go get github.com/yourusername/bill-generator
 ```
 
 ## Quick Start
@@ -30,7 +30,7 @@ package main
 
 import (
     "log"
-    "github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/invoice"
+    "bill-generator/pkg/invoice"
 )
 
 func main() {
@@ -52,7 +52,7 @@ package main
 
 import (
     "log"
-    "github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/invoice"
+    "bill-generator/pkg/invoice"
 )
 
 func main() {
@@ -91,7 +91,7 @@ package main
 
 import (
     "net/http"
-    "github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/invoice"
+    "bill-generator/pkg/invoice"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -228,7 +228,7 @@ Or in JSON:
 The library uses a component-based architecture for extensibility:
 
 ```go
-import "github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/component"
+import "bill-generator/pkg/component"
 
 // Components implement the Component interface
 type Component interface {
@@ -256,7 +256,7 @@ text := component.NewTextBlock("Hello World",
 ## Project Structure
 
 ```
-go-arabic-pdf-lib/
+bill-generator/
 ├── pkg/
 │   ├── invoice/      # Main library API
 │   ├── component/    # Reusable PDF components
@@ -367,4 +367,3 @@ type Product struct {
 ## License
 
 MIT License
-

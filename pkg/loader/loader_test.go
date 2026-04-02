@@ -57,6 +57,10 @@ func TestParseJSON(t *testing.T) {
 		t.Errorf("Expected title 'Test Invoice', got '%s'", invoice.Title)
 	}
 
+	if invoice.Seller.Name != "Test Store" {
+		t.Errorf("Expected seller name 'Test Store', got '%s'", invoice.Seller.Name)
+	}
+
 	if invoice.Language != "en" {
 		t.Errorf("Expected language 'en', got '%s'", invoice.Language)
 	}

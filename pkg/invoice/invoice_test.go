@@ -2,6 +2,7 @@ package invoice
 
 import (
 	"testing"
+	"time"
 )
 
 func TestNewBuilder(t *testing.T) {
@@ -12,13 +13,12 @@ func TestNewBuilder(t *testing.T) {
 }
 
 func TestBuilder_BasicFields(t *testing.T) {
+	testDate := time.Date(2024, 1, 15, 0, 0, 0, 0, time.UTC)
 	inv := NewBuilder().
 		WithTitle("Test Invoice").
 		WithInvoiceNumber("INV-001").
-		WithStoreName("Test Store").
-		WithStoreAddress("123 Main St").
-		WithDate("2024/01/15").
-		WithVATRegistration("123456789").
+		WithSeller("Test Store", "123 Main St", "123456789", "CR-001").
+		WithDate(testDate).
 		WithQRCode("test-qr").
 		WithTotals(10.0, 190.0, 28.5, 218.5).
 		Build()
@@ -29,14 +29,14 @@ func TestBuilder_BasicFields(t *testing.T) {
 	if inv.InvoiceNumber != "INV-001" {
 		t.Errorf("Expected invoice number 'INV-001', got '%s'", inv.InvoiceNumber)
 	}
-	if inv.StoreName != "Test Store" {
-		t.Errorf("Expected store name 'Test Store', got '%s'", inv.StoreName)
+	if inv.Seller.Name != "Test Store" {
+		t.Errorf("Expected seller name 'Test Store', got '%s'", inv.Seller.Name)
 	}
-	if inv.StoreAddress != "123 Main St" {
-		t.Errorf("Expected store address '123 Main St', got '%s'", inv.StoreAddress)
+	if inv.Seller.Address != "123 Main St" {
+		t.Errorf("Expected seller address '123 Main St', got '%s'", inv.Seller.Address)
 	}
-	if inv.Date != "2024/01/15" {
-		t.Errorf("Expected date '2024/01/15', got '%s'", inv.Date)
+	if !inv.Date.Equal(testDate) {
+		t.Errorf("Expected date %v, got %v", testDate, inv.Date)
 	}
 }
 
@@ -178,8 +178,8 @@ func TestNewGenerator(t *testing.T) {
 	if gen == nil {
 		t.Fatal("NewGenerator returned nil")
 	}
-	if gen.fontPath != "/fonts/Amiri-Regular.ttf" {
-		t.Errorf("Expected default font path, got '%s'", gen.fontPath)
+	if gen.fontPath != "fonts" {
+		t.Errorf("Expected default font path 'fonts', got '%s'", gen.fontPath)
 	}
 }
 
