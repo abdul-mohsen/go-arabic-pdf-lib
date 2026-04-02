@@ -321,6 +321,6 @@ func (t *TotalsTable) Draw(pdf *gopdf.GoPdf) float64 {
 
 // FormatNumber formats a number for display.
 func FormatNumber(n float64, decimals int) string {
-	format := fmt.Sprintf("%%.%df", decimals)
+	format := fmt.Sprintf("%s%", decimals)
 	return fmt.Sprintf(format, n)
 }

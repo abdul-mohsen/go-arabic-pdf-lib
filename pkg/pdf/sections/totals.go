@@ -31,11 +31,11 @@ func DrawTotals(ctx *DrawContext) {
 	// 		inv.Labels.TotalDiscount, fmt.Sprintf("%.2f", inv.TotalDiscount), isRTL, false)
 	// }
 	drawTotalsRow(ctx, totalsX, valueWidth, labelWidth, l.TotalsRowH,
-		inv.Labels.TotalDiscount, fmt.Sprintf("%.2f", inv.TotalDiscount), isRTL, false)
+		inv.Labels.TotalDiscount, fmt.Sprintf("%s", inv.TotalDiscount), isRTL, false)
 
 	// Row: Taxable Amount
 	drawTotalsRow(ctx, totalsX, valueWidth, labelWidth, l.TotalsRowH,
-		inv.Labels.TotalTaxable, fmt.Sprintf("%.2f", inv.TotalTaxableAmt), isRTL, false)
+		inv.Labels.TotalTaxable, fmt.Sprintf("%s", inv.TotalTaxableAmt), isRTL, false)
 
 	// Row: VAT Amount — draw label and percentage separately to avoid RTL mangling
 	vatLabel := or(inv.Labels.TotalVAT, "")
@@ -46,9 +46,9 @@ func DrawTotals(ctx *DrawContext) {
 			vatLabel = "VAT Amount"
 		}
 	}
-	pctSuffix := fmt.Sprintf(" (%.0f%%)", inv.VATPercentage)
+	pctSuffix := fmt.Sprintf(" (%s%)", inv.VATPercentage)
 	drawTotalsRowWithSuffix(ctx, totalsX, valueWidth, labelWidth, l.TotalsRowH,
-		vatLabel, pctSuffix, fmt.Sprintf("%.2f", inv.TotalVAT), isRTL, false)
+		vatLabel, pctSuffix, fmt.Sprintf("%s", inv.TotalVAT), isRTL, false)
 
 	// Row: Grand Total (bold, thicker border)
 	pdf.SetLineWidth(1.0)
@@ -56,7 +56,7 @@ func DrawTotals(ctx *DrawContext) {
 
 	totalLabel := inv.Labels.TotalWithVat
 	drawTotalsRowWithSuffix(ctx, totalsX, valueWidth, labelWidth, l.TotalsFinalRowH,
-		totalLabel, pctSuffix, fmt.Sprintf("%.2f", inv.TotalWithVAT), isRTL, true)
+		totalLabel, pctSuffix, fmt.Sprintf("%s", inv.TotalWithVAT), isRTL, true)
 
 	ctx.CurrentY += 4
 }
