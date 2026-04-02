@@ -233,36 +233,36 @@ func drawRowCellsLTR(ctx *DrawContext, tableX float64, colWidths []float64, text
 	col++
 
 	// Quantity
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.Quantity), xPos, colWidths[col], textY, true, fs)
+	drawCellNumberSized(pdf, product.Quantity, xPos, colWidths[col], textY, true, fs)
 	xPos += colWidths[col]
 	col++
 
 	// Unit Price
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.UnitPrice), xPos, colWidths[col], textY, false, fs)
+	drawCellNumberSized(pdf, product.UnitPrice, xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 
 	// Discount
 	// if product.Discount > 0 {
 	// }
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.Discount), xPos, colWidths[col], textY, false, fs)
+	drawCellNumberSized(pdf, product.Discount, xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 
 	// Subtotal excl VAT (B2B only)
 	if isB2B {
-		drawCellNumberSized(pdf, fmt.Sprintf("%s", product.SubtotalExclVAT), xPos, colWidths[col], textY, false, fs)
+		drawCellNumberSized(pdf, product.SubtotalExclVAT, xPos, colWidths[col], textY, false, fs)
 		xPos += colWidths[col]
 		col++
 	}
 
 	// VAT Amount
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.VATAmount), xPos, colWidths[col], textY, false, fs)
+	drawCellNumberSized(pdf, product.VATAmount, xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 
 	// Total
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.Total), xPos, colWidths[col], textY, false, fs)
+	drawCellNumberSized(pdf, product.Total, xPos, colWidths[col], textY, false, fs)
 }
 
 func drawRowCellsRTL(ctx *DrawContext, tableX float64, colWidths []float64, textY, lineHeight float64, product models.Product, isB2B bool) {
@@ -272,18 +272,18 @@ func drawRowCellsRTL(ctx *DrawContext, tableX float64, colWidths []float64, text
 	col := 0
 
 	// Column 0: Total (leftmost in RTL visual)
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.Total), xPos, colWidths[col], textY, false, fs)
+	drawCellNumberSized(pdf, product.Total, xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 
 	// Column 1: VAT Amount
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.VATAmount), xPos, colWidths[col], textY, false, fs)
+	drawCellNumberSized(pdf, product.VATAmount, xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 
 	// Subtotal excl VAT (B2B only)
 	if isB2B {
-		drawCellNumberSized(pdf, fmt.Sprintf("%s", product.SubtotalExclVAT), xPos, colWidths[col], textY, false, fs)
+		drawCellNumberSized(pdf, product.SubtotalExclVAT, xPos, colWidths[col], textY, false, fs)
 		xPos += colWidths[col]
 		col++
 	}
@@ -292,17 +292,17 @@ func drawRowCellsRTL(ctx *DrawContext, tableX float64, colWidths []float64, text
 	// if product.Discount > 0 {
 	// 	drawCellNumberSized(pdf, fmt.Sprintf("%.2f", product.Discount), xPos, colWidths[col], textY, false, fs)
 	// }
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.Discount), xPos, colWidths[col], textY, false, fs)
+	drawCellNumberSized(pdf, product.Discount, xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 
 	// Unit Price
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.UnitPrice), xPos, colWidths[col], textY, false, fs)
+	drawCellNumberSized(pdf, product.UnitPrice, xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 
 	// Quantity
-	drawCellNumberSized(pdf, fmt.Sprintf("%s", product.Quantity), xPos, colWidths[col], textY, false, fs)
+	drawCellNumberSized(pdf, product.Quantity, xPos, colWidths[col], textY, false, fs)
 	xPos += colWidths[col]
 	col++
 
