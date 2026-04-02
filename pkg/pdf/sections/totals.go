@@ -47,6 +47,7 @@ func DrawTotals(ctx *DrawContext) {
 		}
 	}
 	pctSuffix := fmt.Sprintf(" (%s%)", inv.VATPercentage)
+	pctSuffix = "(15%)"
 	drawTotalsRowWithSuffix(ctx, totalsX, valueWidth, labelWidth, l.TotalsRowH,
 		vatLabel, pctSuffix, inv.TotalVAT, isRTL, false)
 
