@@ -1,8 +1,6 @@
 package sections
 
 import (
-	"fmt"
-
 	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/models"
 	"github.com/abdul-mohsen/go-arabic-pdf-lib/pkg/textutil"
 
